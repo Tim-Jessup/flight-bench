@@ -144,17 +144,6 @@
               <div class="input-hint">Typical: 3S=11.1V, 4S=14.8V, 6S=22.2V</div>
             </div>
 
-            <!-- Wire Material -->
-            <div class="input-group">
-              <label class="input-label">
-                Wire Material
-              </label>
-              <select class="select-field" id="material-select">
-                <option value="copper" selected>Copper (most common)</option>
-                <option value="aluminum">Aluminum</option>
-              </select>
-            </div>
-
             <!-- Advanced Settings Toggle -->
             <button class="advanced-toggle" id="advanced-toggle">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -331,12 +320,6 @@
         this.bindInput('maxDrop', 'max-drop');
         this.bindInput('temperature', 'temperature');
 
-        // Material select
-        document.getElementById('material-select').addEventListener('change', (e) => {
-          this.state.material = e.target.value;
-          this.calculate();
-        });
-
         // Share button
         document.getElementById('share-btn').addEventListener('click', () => {
           FlightBench.state.copyShareUrl();
@@ -394,10 +377,6 @@
           document.getElementById('voltage-slider').value = urlState.voltage;
           document.getElementById('voltage-value').value = urlState.voltage;
         }
-        if (urlState.material) {
-          this.state.material = urlState.material;
-          document.getElementById('material-select').value = urlState.material;
-        }
         if (urlState.maxDrop) {
           this.state.maxDrop = urlState.maxDrop;
           document.getElementById('max-drop').value = urlState.maxDrop;
@@ -410,7 +389,6 @@
           current: this.state.current,
           length: this.state.length,
           voltage: this.state.voltage,
-          material: this.state.material,
           maxDrop: this.state.maxDrop
         });
       },
