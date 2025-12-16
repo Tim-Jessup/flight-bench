@@ -102,6 +102,145 @@
       </header>
 
       <div class="calculator-container">
+        <!-- Calculation Explanations Section -->
+        <div class="calculation-explanations collapsed" id="calculation-explanations">
+          <button class="calculation-explanations-toggle" id="explanations-toggle" aria-expanded="false">
+            <div class="calculation-explanations-toggle-text">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              How are these calculations performed?
+            </div>
+            <svg class="calculation-explanations-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          <div class="calculation-explanations-content">
+            <div class="calculation-explanations-inner">
+              <h3>Understanding Thrust-to-Weight Ratio</h3>
+              <p>
+                The thrust-to-weight ratio (T/W or TWR) is one of the most fundamental performance metrics for
+                multirotor aircraft. It directly determines whether your aircraft can fly, how well it can hover,
+                and how aggressively it can maneuver. This calculator helps you evaluate your aircraft's performance
+                envelope and identify potential issues before flight testing.
+              </p>
+
+              <h4>Basic T/W Calculation</h4>
+              <p>
+                The thrust-to-weight ratio is calculated as the total available thrust divided by the total weight
+                of the aircraft:
+              </p>
+              <span class="formula-label">Thrust-to-Weight Ratio</span>
+              <code class="formula">T/W = Total Thrust / Total Weight</code>
+              <p>
+                Both thrust and weight should be expressed in the same units (typically grams or Newtons). The result
+                is a dimensionless ratio, often expressed as "X:1" (e.g., "2:1" means the aircraft produces twice as
+                much thrust as its weight). A ratio greater than 1:1 is required for flight, as thrust must exceed
+                weight to overcome gravity.
+              </p>
+
+              <h4>Hover Throttle</h4>
+              <p>
+                The hover throttle percentage indicates how much throttle is required to maintain a stable hover.
+                This is inversely related to the T/W ratio:
+              </p>
+              <span class="formula-label">Hover Throttle Calculation</span>
+              <code class="formula">Hover Throttle = (1 / T/W) × 100%</code>
+              <p>
+                For example, a 2:1 T/W ratio results in approximately 50% hover throttle. Lower hover throttle values
+                provide more control authority, better flight time, and increased safety margins. Most experienced
+                pilots target hover throttle between 40-60% for optimal performance and handling.
+              </p>
+
+              <h4>Performance Categories and Flight Characteristics</h4>
+              <p>
+                Different T/W ratios enable different flight capabilities. Below 1:1, the aircraft cannot overcome
+                gravity and will not fly. At 1:1 to 1.5:1 (marginal range), the aircraft can barely hover with minimal
+                control authority, making it dangerous and unsuitable for most applications. From 1.5:1 to 2:1 (light duty),
+                the aircraft achieves stable hover but with limited maneuverability and no payload capacity.
+              </p>
+              <p>
+                The sweet spot for most applications is 2:1 to 3:1 (standard range), providing good all-around performance
+                with efficient flight, stable control, and some payload capacity. Sport flying (3:1 to 5:1) enables agile,
+                responsive maneuvers with excellent acceleration. Racing configurations (5:1 to 8:1) allow high-speed flight
+                and aggressive aerobatics, while extreme setups (above 8:1) are typically reserved for competition-level
+                freestyle and racing where maximum acceleration is paramount.
+              </p>
+
+              <h4>Safety Margins and Payload Capacity</h4>
+              <p>
+                Maintaining adequate safety margins is critical for reliable flight operations. The excess thrust
+                (thrust minus weight) determines your ability to recover from altitude loss, fight wind gusts, and
+                carry additional payload:
+              </p>
+              <span class="formula-label">Excess Thrust</span>
+              <code class="formula">Excess Thrust = Total Thrust - Total Weight</code>
+              <p>
+                Maximum payload capacity while maintaining a safe minimum T/W ratio (typically 2:1) can be calculated as:
+              </p>
+              <span class="formula-label">Max Additional Payload</span>
+              <code class="formula">Max Payload = (Total Thrust / Min T/W) - Current Weight</code>
+              <p>
+                Always include a safety margin for battery voltage sag, motor heating, propeller wear, and unexpected
+                environmental conditions. A configuration that barely meets the minimum T/W ratio on the bench may
+                become unsafe in real-world conditions.
+              </p>
+
+              <div class="limitations-section">
+                <h4>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  Limitations
+                </h4>
+                <ul>
+                  <li>
+                    <strong>Static thrust assumptions:</strong> These calculations assume static (zero airspeed) thrust
+                    measurements. Actual thrust varies with airspeed, altitude, temperature, and air density. Forward
+                    flight typically reduces available vertical thrust while increasing horizontal efficiency.
+                  </li>
+                  <li>
+                    <strong>Linear throttle assumption:</strong> The hover throttle calculation assumes a linear relationship
+                    between throttle input and thrust output. In reality, this relationship is non-linear due to motor
+                    characteristics, propeller efficiency curves, and ESC calibration. Actual hover throttle may differ
+                    from calculated values by 10-20%.
+                  </li>
+                  <li>
+                    <strong>No dynamic effects:</strong> The calculator doesn't account for battery voltage sag under load,
+                    which can reduce available thrust by 10-30% as the battery discharges. Motor and ESC heating also
+                    reduces performance during extended flights. Always test with realistic flight loads.
+                  </li>
+                  <li>
+                    <strong>Center of gravity effects:</strong> T/W ratio alone doesn't guarantee stable flight. Poor
+                    center of gravity location, motor thrust misalignment, or significant weight imbalances can make an
+                    aircraft unflyable even with excellent T/W ratios.
+                  </li>
+                  <li>
+                    <strong>Environmental factors:</strong> Wind, gusts, and turbulence effectively reduce your usable
+                    T/W ratio. Operating in challenging conditions requires higher ratios than calm-weather flight. High
+                    altitude (reduced air density) also decreases thrust by approximately 3% per 1000 feet of elevation.
+                  </li>
+                  <li>
+                    <strong>Motor and propeller efficiency:</strong> The calculator assumes consistent thrust across all
+                    motors. Damaged propellers, motor bell imbalances, or ESC desynchronization can significantly reduce
+                    effective thrust and create dangerous flight characteristics.
+                  </li>
+                  <li>
+                    <strong>Verification strongly recommended:</strong> Always verify thrust measurements with a thrust
+                    stand when possible, especially for critical applications. Start with conservative test flights in
+                    controlled environments before pushing performance limits.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="calculator-grid">
           <!-- Inputs Panel -->
           <div class="card inputs-panel">
@@ -362,11 +501,30 @@
       // Initialize
       init() {
         this.bindInputs();
+        this.initExplanationsToggle();
         this.loadFromUrl();
         this.calculate();
         this.initGauge();
         this.startAnimation();
         this.renderPerformanceBands();
+      },
+
+      // Initialize explanations toggle
+      initExplanationsToggle() {
+        const toggle = document.getElementById('explanations-toggle');
+        const container = document.getElementById('calculation-explanations');
+
+        toggle.addEventListener('click', () => {
+          const isCollapsed = container.classList.contains('collapsed');
+
+          if (isCollapsed) {
+            container.classList.remove('collapsed');
+            toggle.setAttribute('aria-expanded', 'true');
+          } else {
+            container.classList.add('collapsed');
+            toggle.setAttribute('aria-expanded', 'false');
+          }
+        });
       },
 
       // Bind all input events

@@ -102,6 +102,121 @@
       </header>
 
       <div class="calculator-container">
+        <!-- Calculation Explanations Section -->
+        <div class="calculation-explanations collapsed" id="calculation-explanations">
+          <button class="calculation-explanations-toggle" id="explanations-toggle" aria-expanded="false">
+            <div class="calculation-explanations-toggle-text">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              How are these calculations performed?
+            </div>
+            <svg class="calculation-explanations-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          <div class="calculation-explanations-content">
+            <div class="calculation-explanations-inner">
+              <h3>Understanding Flight Time Calculations</h3>
+              <p>
+                This calculator estimates flight duration based on battery capacity, power consumption, and operational
+                reserves. Accurate flight time prediction is critical for mission planning and safe operation.
+              </p>
+
+              <h4>Basic Flight Time Formula</h4>
+              <p>
+                Flight time depends on available energy and average power draw:
+              </p>
+              <span class="formula-label">Flight Time Calculation</span>
+              <code class="formula">Time (minutes) = (Capacity / Current) × 60</code>
+              <p>
+                where Capacity is in Ah and Current is the average draw in Amps. This gives the theoretical maximum time,
+                which must be adjusted for usable capacity and reserves.
+              </p>
+
+              <h4>Usable Capacity</h4>
+              <p>
+                Batteries shouldn't be discharged to 0%. Usable capacity based on safe discharge depth:
+              </p>
+              <span class="formula-label">Usable Capacity</span>
+              <code class="formula">C_usable = C_total × (Discharge_depth / 100)</code>
+              <p>
+                For LiPo batteries, 80% discharge depth (down to 3.3V/cell) balances flight time with battery longevity.
+                Deeper discharges reduce cycle life significantly.
+              </p>
+
+              <h4>Reserve Margin</h4>
+              <p>
+                A safety reserve ensures you land before critical battery depletion:
+              </p>
+              <span class="formula-label">Flight Time with Reserve</span>
+              <code class="formula">T_flight = T_usable × (1 - Reserve / 100)</code>
+              <p>
+                Typical reserves are 20-30%. This accounts for unexpected headwinds, navigation errors, or higher-than-expected
+                power consumption. Never plan to use 100% of calculated flight time.
+              </p>
+
+              <h4>C-Rating During Flight</h4>
+              <p>
+                Current draw relative to battery capacity affects performance:
+              </p>
+              <span class="formula-label">C-Rate</span>
+              <code class="formula">C-rate = Current / Capacity</code>
+              <p>
+                Higher C-rates cause more voltage sag and reduce effective capacity. Staying below 50% of the battery's
+                rated continuous C-rating maintains better performance and extends battery life.
+              </p>
+
+              <h4>Voltage Sag Effect</h4>
+              <p>
+                Under load, battery voltage drops due to internal resistance:
+              </p>
+              <span class="formula-label">Effective Voltage</span>
+              <code class="formula">V_eff = V_nom × (1 - sag%/100)</code>
+              <p>
+                Typical sag is 5-15% depending on load and battery quality. This affects available power and must be
+                accounted for in ESC low-voltage cutoff settings.
+              </p>
+
+              <div class="limitations-section">
+                <h4>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  Limitations
+                </h4>
+                <ul>
+                  <li>
+                    <strong>Assumes constant power:</strong> Real flights involve varying power consumption (takeoff, climbing,
+                    hovering, cruising). Use average values for typical flight profiles.
+                  </li>
+                  <li>
+                    <strong>Environmental factors:</strong> Wind, temperature, humidity, and altitude significantly affect flight
+                    time. Cold weather can reduce capacity by 20-40%. Always test in similar conditions.
+                  </li>
+                  <li>
+                    <strong>Battery aging:</strong> As batteries age, their capacity and internal resistance degrade. Expect
+                    10-20% reduction after 50-100 cycles. Recalibrate estimates periodically.
+                  </li>
+                  <li>
+                    <strong>Weight changes:</strong> Payload variations directly affect power consumption. Heavier aircraft
+                    require more power to hover and have shorter flight times.
+                  </li>
+                  <li>
+                    <strong>Safety margins are critical:</strong> Never rely on calculated maximums. Always maintain adequate
+                    reserves and land with battery remaining for emergencies.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="calculator-grid">
           <!-- Inputs Panel -->
           <div class="card inputs-panel">
@@ -347,10 +462,29 @@
       // Initialize
       init() {
         this.bindInputs();
+        this.initExplanationsToggle();
         this.loadFromUrl();
         this.calculate();
         this.initGauge();
         this.startAnimation();
+      },
+
+      // Initialize explanations toggle
+      initExplanationsToggle() {
+        const toggle = document.getElementById('explanations-toggle');
+        const container = document.getElementById('calculation-explanations');
+
+        toggle.addEventListener('click', () => {
+          const isCollapsed = container.classList.contains('collapsed');
+
+          if (isCollapsed) {
+            container.classList.remove('collapsed');
+            toggle.setAttribute('aria-expanded', 'true');
+          } else {
+            container.classList.add('collapsed');
+            toggle.setAttribute('aria-expanded', 'false');
+          }
+        });
       },
 
       // Bind all input events

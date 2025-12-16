@@ -102,6 +102,124 @@
       </header>
 
       <div class="calculator-container">
+        <!-- Calculation Explanations Section -->
+        <div class="calculation-explanations collapsed" id="calculation-explanations">
+          <button class="calculation-explanations-toggle" id="explanations-toggle" aria-expanded="false">
+            <div class="calculation-explanations-toggle-text">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              How are these calculations performed?
+            </div>
+            <svg class="calculation-explanations-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          <div class="calculation-explanations-content">
+            <div class="calculation-explanations-inner">
+              <h3>Understanding Power System Calculations</h3>
+              <p>
+                This calculator uses simplified aerodynamic and electrical models to estimate the performance
+                of brushless motor and propeller combinations for UAV applications. These calculations help you
+                quickly evaluate different configurations during the design phase.
+              </p>
+
+              <h4>Motor RPM</h4>
+              <p>
+                Motor speed is determined by the motor's KV rating (RPM per volt) and the battery voltage,
+                scaled by throttle percentage:
+              </p>
+              <span class="formula-label">RPM Calculation</span>
+              <code class="formula">RPM = KV × Voltage × (Throttle / 100)</code>
+              <p>
+                where <code>Voltage = Cells × 3.7V</code> (nominal LiPo voltage per cell). The KV rating is a motor
+                constant that describes how fast the motor spins per volt applied.
+              </p>
+
+              <h4>Thrust Estimation</h4>
+              <p>
+                Thrust is estimated using a simplified propeller model based on blade element momentum theory.
+                The relationship depends on propeller diameter (D), pitch (P), RPM, and propeller efficiency:
+              </p>
+              <span class="formula-label">Thrust Model</span>
+              <code class="formula">Thrust = k × D⁴ × P × RPM² × (η_prop / 100)</code>
+              <p>
+                where <code>k ≈ 1.0×10⁻¹⁰</code> is an empirical coefficient (in appropriate units),
+                <code>D</code> and <code>P</code> are in inches, and <code>η_prop</code> is the propeller
+                efficiency percentage. This gives thrust in grams.
+              </p>
+
+              <h4>Power Consumption</h4>
+              <p>
+                Electrical power required is modeled based on propeller loading characteristics:
+              </p>
+              <span class="formula-label">Power Model</span>
+              <code class="formula">Power = k_p × D⁵ × RPM³ / (η_motor / 100)</code>
+              <p>
+                where <code>k_p ≈ 5.0×10⁻¹⁵</code> is a power coefficient and <code>η_motor</code> is the
+                motor efficiency. Power consumption scales with the cube of RPM and the fifth power of diameter,
+                reflecting the significant impact of propeller size.
+              </p>
+
+              <h4>Current Draw</h4>
+              <p>
+                Current is calculated from power and voltage using Ohm's law:
+              </p>
+              <span class="formula-label">Current Calculation</span>
+              <code class="formula">Current = Power / Voltage</code>
+
+              <h4>System Efficiency</h4>
+              <p>
+                Overall system efficiency is expressed as thrust per watt, indicating how effectively the
+                system converts electrical power into thrust:
+              </p>
+              <span class="formula-label">Efficiency Metric</span>
+              <code class="formula">Efficiency = Thrust / Power  (g/W)</code>
+              <p>
+                Higher values indicate better efficiency. Typical values range from 4-10 g/W for multirotor systems.
+              </p>
+
+              <div class="limitations-section">
+                <h4>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  Limitations
+                </h4>
+                <ul>
+                  <li>
+                    <strong>Simplified models:</strong> These calculations use empirical coefficients derived from
+                    typical hobby-grade components. Actual performance varies based on specific motor and propeller
+                    designs, manufacturing quality, and operating conditions.
+                  </li>
+                  <li>
+                    <strong>Static thrust only:</strong> Calculations assume static (zero airspeed) conditions.
+                    In-flight performance differs due to airflow over the propeller and changes in propeller efficiency.
+                  </li>
+                  <li>
+                    <strong>Efficiency assumptions:</strong> Default efficiency values (85% motor, 70% propeller)
+                    are typical but vary significantly. High-quality components may achieve higher efficiencies,
+                    while low-quality or mismatched components perform worse.
+                  </li>
+                  <li>
+                    <strong>No dynamic effects:</strong> The model doesn't account for voltage sag under load,
+                    temperature effects on resistance, or propeller stall at high angles of attack.
+                  </li>
+                  <li>
+                    <strong>Validation recommended:</strong> Always verify critical designs with manufacturer
+                    specifications, thrust stand measurements, or established prop databases before building.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="calculator-grid">
           <!-- Inputs Panel -->
           <div class="card inputs-panel">
@@ -222,124 +340,6 @@
             <h2 class="card-title">Visualization</h2>
             <div class="viz-canvas-container">
               <canvas id="viz-canvas" class="viz-canvas"></canvas>
-            </div>
-          </div>
-
-          <!-- Calculation Explanations Section -->
-          <div class="calculation-explanations collapsed" id="calculation-explanations">
-            <button class="calculation-explanations-toggle" id="explanations-toggle" aria-expanded="false">
-              <div class="calculation-explanations-toggle-text">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                  <line x1="12" y1="17" x2="12.01" y2="17"/>
-                </svg>
-                How are these calculations performed?
-              </div>
-              <svg class="calculation-explanations-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </button>
-
-            <div class="calculation-explanations-content">
-              <div class="calculation-explanations-inner">
-                <h3>Understanding Power System Calculations</h3>
-                <p>
-                  This calculator uses simplified aerodynamic and electrical models to estimate the performance
-                  of brushless motor and propeller combinations for UAV applications. These calculations help you
-                  quickly evaluate different configurations during the design phase.
-                </p>
-
-                <h4>Motor RPM</h4>
-                <p>
-                  Motor speed is determined by the motor's KV rating (RPM per volt) and the battery voltage,
-                  scaled by throttle percentage:
-                </p>
-                <span class="formula-label">RPM Calculation</span>
-                <code class="formula">RPM = KV × Voltage × (Throttle / 100)</code>
-                <p>
-                  where <code>Voltage = Cells × 3.7V</code> (nominal LiPo voltage per cell). The KV rating is a motor
-                  constant that describes how fast the motor spins per volt applied.
-                </p>
-
-                <h4>Thrust Estimation</h4>
-                <p>
-                  Thrust is estimated using a simplified propeller model based on blade element momentum theory.
-                  The relationship depends on propeller diameter (D), pitch (P), RPM, and propeller efficiency:
-                </p>
-                <span class="formula-label">Thrust Model</span>
-                <code class="formula">Thrust = k × D⁴ × P × RPM² × (η_prop / 100)</code>
-                <p>
-                  where <code>k ≈ 1.0×10⁻¹⁰</code> is an empirical coefficient (in appropriate units),
-                  <code>D</code> and <code>P</code> are in inches, and <code>η_prop</code> is the propeller
-                  efficiency percentage. This gives thrust in grams.
-                </p>
-
-                <h4>Power Consumption</h4>
-                <p>
-                  Electrical power required is modeled based on propeller loading characteristics:
-                </p>
-                <span class="formula-label">Power Model</span>
-                <code class="formula">Power = k_p × D⁵ × RPM³ / (η_motor / 100)</code>
-                <p>
-                  where <code>k_p ≈ 5.0×10⁻¹⁵</code> is a power coefficient and <code>η_motor</code> is the
-                  motor efficiency. Power consumption scales with the cube of RPM and the fifth power of diameter,
-                  reflecting the significant impact of propeller size.
-                </p>
-
-                <h4>Current Draw</h4>
-                <p>
-                  Current is calculated from power and voltage using Ohm's law:
-                </p>
-                <span class="formula-label">Current Calculation</span>
-                <code class="formula">Current = Power / Voltage</code>
-
-                <h4>System Efficiency</h4>
-                <p>
-                  Overall system efficiency is expressed as thrust per watt, indicating how effectively the
-                  system converts electrical power into thrust:
-                </p>
-                <span class="formula-label">Efficiency Metric</span>
-                <code class="formula">Efficiency = Thrust / Power  (g/W)</code>
-                <p>
-                  Higher values indicate better efficiency. Typical values range from 4-10 g/W for multirotor systems.
-                </p>
-
-                <div class="limitations-section">
-                  <h4>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                      <line x1="12" y1="9" x2="12" y2="13"/>
-                      <line x1="12" y1="17" x2="12.01" y2="17"/>
-                    </svg>
-                    Limitations
-                  </h4>
-                  <ul>
-                    <li>
-                      <strong>Simplified models:</strong> These calculations use empirical coefficients derived from
-                      typical hobby-grade components. Actual performance varies based on specific motor and propeller
-                      designs, manufacturing quality, and operating conditions.
-                    </li>
-                    <li>
-                      <strong>Static thrust only:</strong> Calculations assume static (zero airspeed) conditions.
-                      In-flight performance differs due to airflow over the propeller and changes in propeller efficiency.
-                    </li>
-                    <li>
-                      <strong>Efficiency assumptions:</strong> Default efficiency values (85% motor, 70% propeller)
-                      are typical but vary significantly. High-quality components may achieve higher efficiencies,
-                      while low-quality or mismatched components perform worse.
-                    </li>
-                    <li>
-                      <strong>No dynamic effects:</strong> The model doesn't account for voltage sag under load,
-                      temperature effects on resistance, or propeller stall at high angles of attack.
-                    </li>
-                    <li>
-                      <strong>Validation recommended:</strong> Always verify critical designs with manufacturer
-                      specifications, thrust stand measurements, or established prop databases before building.
-                    </li>
-                  </ul>
-                </div>
-              </div>
             </div>
           </div>
 
