@@ -102,6 +102,133 @@
       </header>
 
       <div class="calculator-container">
+        <!-- Calculation Explanations Section -->
+        <div class="calculation-explanations collapsed" id="calculation-explanations">
+          <button class="calculation-explanations-toggle" id="explanations-toggle" aria-expanded="false">
+            <div class="calculation-explanations-toggle-text">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              How are these calculations performed?
+            </div>
+            <svg class="calculation-explanations-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          <div class="calculation-explanations-content">
+            <div class="calculation-explanations-inner">
+              <h3>Understanding Battery Configuration Calculations</h3>
+              <p>
+                This calculator helps you configure series (S) and parallel (P) battery pack arrangements for your UAV.
+                Understanding these configurations is essential for achieving the desired voltage, capacity, and discharge
+                capabilities for your application.
+              </p>
+
+              <h4>Series Configuration (S)</h4>
+              <p>
+                Connecting cells in series adds their voltages while keeping capacity constant:
+              </p>
+              <span class="formula-label">Series Voltage</span>
+              <code class="formula">V_total = V_cell × S</code>
+              <p>
+                For example, a 6S LiPo pack has 6 cells in series: 6 × 3.7V = 22.2V nominal. Series configuration
+                increases pack voltage to match motor requirements but doesn't affect capacity.
+              </p>
+
+              <h4>Parallel Configuration (P)</h4>
+              <p>
+                Connecting packs in parallel adds their capacities while keeping voltage constant:
+              </p>
+              <span class="formula-label">Parallel Capacity</span>
+              <code class="formula">C_total = C_cell × P</code>
+              <p>
+                For example, 2P configuration with 1500mAh cells gives 3000mAh total. Parallel configuration
+                increases flight time but doesn't affect voltage.
+              </p>
+
+              <h4>Energy Storage</h4>
+              <p>
+                Total energy stored in the pack:
+              </p>
+              <span class="formula-label">Energy Calculation</span>
+              <code class="formula">Energy (Wh) = Capacity (Ah) × Voltage (V)</code>
+              <p>
+                Energy in watt-hours represents how much work the battery can do. Higher energy means longer flight
+                times or more power available for the same duration.
+              </p>
+
+              <h4>Discharge Rating (C-rating)</h4>
+              <p>
+                Maximum safe continuous current based on capacity and C-rating:
+              </p>
+              <span class="formula-label">Max Current</span>
+              <code class="formula">I_max = (Capacity / 1000) × C-rating</code>
+              <p>
+                For example, a 1500mAh 30C battery can deliver 45A continuous (1.5Ah × 30C = 45A).
+                Burst ratings are higher but should only be used briefly to avoid damage.
+              </p>
+
+              <h4>Internal Resistance</h4>
+              <p>
+                Pack resistance affects voltage sag under load:
+              </p>
+              <span class="formula-label">Total Resistance</span>
+              <code class="formula">R_total = (R_cell × S) / P</code>
+              <p>
+                Series connections add resistance, while parallel connections reduce it. Lower resistance
+                means better performance under high current draw and less voltage sag.
+              </p>
+
+              <h4>Energy Density</h4>
+              <p>
+                Energy per unit weight indicates efficiency:
+              </p>
+              <span class="formula-label">Energy Density</span>
+              <code class="formula">Energy Density = Energy (Wh) / Weight (kg)</code>
+              <p>
+                Typical values: LiPo (~150-170 Wh/kg), Li-Ion (~200-250 Wh/kg), LiFePO4 (~90-110 Wh/kg).
+                Higher energy density means more flight time for the same weight.
+              </p>
+
+              <div class="limitations-section">
+                <h4>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  Limitations
+                </h4>
+                <ul>
+                  <li>
+                    <strong>Cell matching:</strong> When building parallel packs, cells must be closely matched in voltage,
+                    capacity, and internal resistance. Mismatched cells can lead to unbalanced charging and reduced lifespan.
+                  </li>
+                  <li>
+                    <strong>C-rating inflation:</strong> Manufacturer C-ratings are often overstated. Conservative estimates
+                    are recommended, especially for sustained high-current applications.
+                  </li>
+                  <li>
+                    <strong>Voltage sag:</strong> Calculations use nominal voltages. Under high load, voltage drops due to
+                    internal resistance. Actual performance may be lower than calculated values.
+                  </li>
+                  <li>
+                    <strong>Temperature effects:</strong> Cold temperatures significantly reduce capacity and increase
+                    internal resistance. LiPo performance degrades below 0°C.
+                  </li>
+                  <li>
+                    <strong>Balancing required:</strong> Series configurations require proper cell balancing during charging
+                    to prevent damage and ensure longevity. Always use a balance charger.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="calculator-grid">
           <!-- Inputs Panel -->
           <div class="card inputs-panel">
@@ -379,8 +506,27 @@
       // Initialize
       init() {
         this.bindInputs();
+        this.initExplanationsToggle();
         this.loadFromUrl();
         this.calculate();
+      },
+
+      // Initialize explanations toggle
+      initExplanationsToggle() {
+        const toggle = document.getElementById('explanations-toggle');
+        const container = document.getElementById('calculation-explanations');
+
+        toggle.addEventListener('click', () => {
+          const isCollapsed = container.classList.contains('collapsed');
+
+          if (isCollapsed) {
+            container.classList.remove('collapsed');
+            toggle.setAttribute('aria-expanded', 'true');
+          } else {
+            container.classList.add('collapsed');
+            toggle.setAttribute('aria-expanded', 'false');
+          }
+        });
       },
 
       // Bind all input events

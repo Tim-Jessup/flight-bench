@@ -102,6 +102,134 @@
       </header>
 
       <div class="calculator-container">
+        <!-- Calculation Explanations Section -->
+        <div class="calculation-explanations collapsed" id="calculation-explanations">
+          <button class="calculation-explanations-toggle" id="explanations-toggle" aria-expanded="false">
+            <div class="calculation-explanations-toggle-text">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              How are these calculations performed?
+            </div>
+            <svg class="calculation-explanations-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          <div class="calculation-explanations-content">
+            <div class="calculation-explanations-inner">
+              <h3>Understanding Range Estimation Calculations</h3>
+              <p>
+                Range estimation for UAVs involves calculating the maximum distance achievable based on available
+                battery energy, cruise speed, and mission profile. These calculations account for energy consumption,
+                wind effects, and the need to return to the launch point for round-trip missions.
+              </p>
+
+              <h4>Basic Range Formula</h4>
+              <p>
+                For a simple one-way mission without wind, range is the product of speed and available flight time:
+              </p>
+              <span class="formula-label">One-Way Range</span>
+              <code class="formula">Range = Speed × Time = Speed × (Energy / Power)</code>
+              <p>
+                where <code>Energy</code> is the usable battery energy in watt-hours (Wh), <code>Power</code> is the
+                cruise power consumption in watts (W), and <code>Speed</code> is the cruise speed. This gives time
+                in hours, which multiplied by speed yields distance.
+              </p>
+
+              <h4>Round-Trip Range Calculation</h4>
+              <p>
+                For missions requiring a return to home, the aircraft must reserve enough energy to fly back. When
+                wind is present, outbound and return speeds differ, requiring a more complex calculation:
+              </p>
+              <span class="formula-label">Round-Trip with Wind</span>
+              <code class="formula">Range = Total_Time / (1/Speed_out + 1/Speed_return)</code>
+              <p>
+                where <code>Speed_out = Airspeed - Headwind</code> and <code>Speed_return = Airspeed + Headwind</code>
+                (assuming the wind becomes a tailwind on return). The formula accounts for spending different amounts
+                of time on each leg due to varying ground speeds.
+              </p>
+
+              <h4>Wind Effects and Ground Speed</h4>
+              <p>
+                Wind significantly impacts range by altering ground speed while power consumption remains tied to
+                airspeed. Headwinds reduce ground speed, requiring more time (and thus energy) to cover the same
+                distance:
+              </p>
+              <span class="formula-label">Ground Speed</span>
+              <code class="formula">Ground_Speed = Airspeed ± Wind_Speed</code>
+              <p>
+                For range optimization, flying into headwinds on the outbound leg can be advantageous since the
+                tailwind-assisted return requires less time to cover the same distance, though total flight time
+                remains constant.
+              </p>
+
+              <h4>Energy Budget and Reserves</h4>
+              <p>
+                Safe mission planning requires accounting for unusable battery capacity and landing reserves.
+                The available energy for flight is calculated as:
+              </p>
+              <span class="formula-label">Flyable Energy</span>
+              <code class="formula">Flyable_Energy = Capacity × Voltage × (Usable% / 100) × (1 - Reserve% / 100)</code>
+              <p>
+                Typical LiPo batteries should only be discharged to 80% of capacity (20% remaining) to preserve
+                battery health. An additional 20% reserve for landing ensures safety margins for unexpected
+                conditions or navigation to alternate landing sites.
+              </p>
+
+              <div class="limitations-section">
+                <h4>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  Limitations
+                </h4>
+                <ul>
+                  <li>
+                    <strong>Constant power assumption:</strong> Calculations assume constant cruise power consumption.
+                    In reality, power varies with climb/descent, turns, airspeed changes, altitude, and air density.
+                    Aggressive maneuvering significantly increases power draw.
+                  </li>
+                  <li>
+                    <strong>Simplified wind model:</strong> Wind is treated as a constant headwind/tailwind along the
+                    flight path. Real wind varies in direction and magnitude with altitude, terrain, and weather. Crosswinds
+                    are not modeled but can require additional power for drift correction.
+                  </li>
+                  <li>
+                    <strong>No altitude effects:</strong> The model doesn't account for climb energy costs or the benefits
+                    of flying at optimal altitude for efficiency. Significant altitude changes during missions require
+                    additional energy not captured in cruise power estimates.
+                  </li>
+                  <li>
+                    <strong>Battery performance:</strong> Battery capacity and voltage sag under load depend on discharge
+                    rate, temperature, age, and battery quality. Cold temperatures can reduce effective capacity by 20-40%.
+                    High discharge rates increase voltage sag and reduce available energy.
+                  </li>
+                  <li>
+                    <strong>Survey pattern assumptions:</strong> Survey missions use a simplified model allocating a
+                    percentage of range to the survey pattern. Actual survey efficiency depends on pattern type (parallel
+                    lines, orbits), overlap requirements, and turn overhead.
+                  </li>
+                  <li>
+                    <strong>No navigation overhead:</strong> Calculations assume perfect direct-line navigation. Real
+                    missions include turns, waypoint navigation deviations, and obstacle avoidance that increase actual
+                    distance flown.
+                  </li>
+                  <li>
+                    <strong>Safety margins critical:</strong> Always validate range estimates with test flights under
+                    similar conditions. Use conservative reserves (30-40%) for critical missions, unfamiliar aircraft,
+                    or challenging environments. Never rely on maximum calculated range for mission planning.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="calculator-grid">
           <!-- Inputs Panel -->
           <div class="card inputs-panel">
@@ -425,8 +553,27 @@
       // Initialize
       init() {
         this.bindInputs();
+        this.initExplanationsToggle();
         this.loadFromUrl();
         this.calculate();
+      },
+
+      // Initialize explanations toggle
+      initExplanationsToggle() {
+        const toggle = document.getElementById('explanations-toggle');
+        const container = document.getElementById('calculation-explanations');
+
+        toggle.addEventListener('click', () => {
+          const isCollapsed = container.classList.contains('collapsed');
+
+          if (isCollapsed) {
+            container.classList.remove('collapsed');
+            toggle.setAttribute('aria-expanded', 'true');
+          } else {
+            container.classList.add('collapsed');
+            toggle.setAttribute('aria-expanded', 'false');
+          }
+        });
       },
 
       // Bind all input events

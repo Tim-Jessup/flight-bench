@@ -102,6 +102,122 @@
       </header>
 
       <div class="calculator-container">
+        <!-- Calculation Explanations Section -->
+        <div class="calculation-explanations collapsed" id="calculation-explanations">
+          <button class="calculation-explanations-toggle" id="explanations-toggle" aria-expanded="false">
+            <div class="calculation-explanations-toggle-text">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              How are these calculations performed?
+            </div>
+            <svg class="calculation-explanations-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          <div class="calculation-explanations-content">
+            <div class="calculation-explanations-inner">
+              <h3>Understanding Wire Gauge Calculations</h3>
+              <p>
+                This calculator helps you select the appropriate wire gauge (AWG - American Wire Gauge) for your
+                UAV power distribution system. Proper wire sizing ensures minimal voltage drop, safe operation,
+                and efficient power delivery.
+              </p>
+
+              <h4>Wire Resistance</h4>
+              <p>
+                Wire resistance depends on the material, cross-sectional area, length, and temperature. For copper wire at 20°C:
+              </p>
+              <span class="formula-label">Resistance Calculation</span>
+              <code class="formula">R = ρ × L / A</code>
+              <p>
+                where <code>ρ</code> is resistivity (material-dependent), <code>L</code> is the total wire length
+                (round-trip: 2 × cable length), and <code>A</code> is the cross-sectional area. The calculator
+                uses standardized AWG resistance values per meter.
+              </p>
+
+              <h4>Temperature Correction</h4>
+              <p>
+                Resistance increases with temperature:
+              </p>
+              <span class="formula-label">Temperature Coefficient</span>
+              <code class="formula">R(T) = R₀ × (1 + α × ΔT)</code>
+              <p>
+                where <code>R₀</code> is resistance at 20°C, <code>α ≈ 0.00393/°C</code> for copper, and
+                <code>ΔT</code> is the temperature difference from 20°C.
+              </p>
+
+              <h4>Voltage Drop</h4>
+              <p>
+                Voltage drop occurs due to current flowing through wire resistance:
+              </p>
+              <span class="formula-label">Voltage Drop Calculation</span>
+              <code class="formula">V_drop = I × R</code>
+              <p>
+                Expressed as a percentage: <code>V_drop% = (V_drop / V_system) × 100</code>. Typical UAV systems
+                target less than 3-5% voltage drop to maintain efficiency and avoid brownouts under load.
+              </p>
+
+              <h4>Power Loss</h4>
+              <p>
+                Power dissipated as heat in the wire:
+              </p>
+              <span class="formula-label">Power Loss Calculation</span>
+              <code class="formula">P_loss = I² × R</code>
+              <p>
+                This represents wasted energy. Lower resistance wire reduces power loss and improves overall
+                system efficiency.
+              </p>
+
+              <h4>Wire Selection Criteria</h4>
+              <p>
+                The calculator recommends the smallest (highest AWG number) wire that satisfies:
+              </p>
+              <ul>
+                <li><strong>Voltage drop threshold:</strong> Keeps voltage drop below your specified limit</li>
+                <li><strong>Current capacity (ampacity):</strong> Wire can safely handle the continuous current</li>
+                <li><strong>Thermal margin:</strong> Prevents overheating during normal operation</li>
+              </ul>
+
+              <div class="limitations-section">
+                <h4>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  Limitations
+                </h4>
+                <ul>
+                  <li>
+                    <strong>DC assumptions:</strong> Calculations assume DC current. AC systems have additional considerations
+                    like skin effect and inductance at high frequencies.
+                  </li>
+                  <li>
+                    <strong>Ampacity ratings:</strong> Values are conservative estimates for open-air installation. Bundled
+                    wires or enclosed installations may require derating. Always check manufacturer specifications.
+                  </li>
+                  <li>
+                    <strong>Connector losses:</strong> The model doesn't account for voltage drop at connectors (XT60, XT90, etc.),
+                    which can be significant. Use high-quality connectors rated for your current.
+                  </li>
+                  <li>
+                    <strong>Wire quality:</strong> Calculations assume pure copper or aluminum. Copper-clad aluminum (CCA)
+                    or low-quality wire has higher resistance than specified.
+                  </li>
+                  <li>
+                    <strong>Safety margins:</strong> For critical applications or sustained high currents, consider oversizing
+                    by one or two gauge sizes for additional safety margin.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="calculator-grid">
           <!-- Inputs Panel -->
           <div class="card inputs-panel">
@@ -305,8 +421,27 @@
       // Initialize
       init() {
         this.bindInputs();
+        this.initExplanationsToggle();
         this.loadFromUrl();
         this.calculate();
+      },
+
+      // Initialize explanations toggle
+      initExplanationsToggle() {
+        const toggle = document.getElementById('explanations-toggle');
+        const container = document.getElementById('calculation-explanations');
+
+        toggle.addEventListener('click', () => {
+          const isCollapsed = container.classList.contains('collapsed');
+
+          if (isCollapsed) {
+            container.classList.remove('collapsed');
+            toggle.setAttribute('aria-expanded', 'true');
+          } else {
+            container.classList.add('collapsed');
+            toggle.setAttribute('aria-expanded', 'false');
+          }
+        });
       },
 
       // Bind all input events
