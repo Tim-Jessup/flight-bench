@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Power System Calculator - FlightBench</title>
+  <meta name="description" content="Calculate thrust, current draw, and efficiency for UAV motor, propeller, and battery combinations.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23eebb3e' rx='20' width='100' height='100'/><path d='M50 20 L70 45 L60 45 L60 80 L40 80 L40 45 L30 45 Z' fill='%231a1a1a'/></svg>">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L15 9H21L16 14L18 22L12 18L6 22L8 14L3 9H9L12 2Z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Flight<span>Bench</span></span>
+        </a>
+      </div>
+      
+      <div class="sidebar-search">
+        <input type="text" class="search-input" placeholder="Search calculators..." aria-label="Search calculators">
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-category">
+          <div class="nav-category-title">Power System</div>
+          <a href="power-system.html" class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            Power System Calculator
+          </a>
+          <a href="wire-gauge.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            Wire Gauge Calculator
+          </a>
+          <a href="battery-config.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M22 11v4"/>
+              <path d="M6 11v6"/>
+              <path d="M10 11v6"/>
+              <path d="M14 11v6"/>
+              <path d="M18 11v6"/>
+            </svg>
+            Battery Configuration
+          </a>
+        </div>
+        
+        <div class="nav-category">
+          <div class="nav-category-title">Mission Planning</div>
+          <a href="flight-time.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Flight Time Estimator
+          </a>
+          <a href="range-estimator.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            Range Estimator
+          </a>
+        </div>
+        
+        <div class="nav-category">
+          <div class="nav-category-title">Mechanical</div>
+          <a href="thrust-weight.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M2 12h20"/>
+              <circle cx="12" cy="12" r="4"/>
+            </svg>
+            Thrust-to-Weight Ratio
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="page-header">
+        <h1>Power System Calculator</h1>
+        <p>Estimate thrust, current draw, and power for your motor, propeller, and battery combination.</p>
+      </header>
+
+      <div class="calculator-container">
+        <div class="calculator-grid">
+          <!-- Inputs Panel -->
+          <div class="card inputs-panel">
+            <h2 class="card-title">Inputs</h2>
+            
+            <!-- Motor KV -->
+            <div class="input-group">
+              <label class="input-label">
+                Motor KV
+                <span class="input-unit">RPM/V</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="kv-slider" min="100" max="3000" value="920" step="10">
+                <input type="text" class="slider-value" id="kv-value" value="920">
+              </div>
+            </div>
+
+            <!-- Battery Cells -->
+            <div class="input-group">
+              <label class="input-label">
+                Battery Cells (S)
+                <span class="input-unit">LiPo</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="cells-slider" min="2" max="14" value="6" step="1">
+                <input type="text" class="slider-value" id="cells-value" value="6">
+              </div>
+            </div>
+
+            <!-- Propeller -->
+            <div class="input-group">
+              <label class="input-label">
+                Propeller Size
+                <span class="input-unit">diameter × pitch</span>
+              </label>
+              <div class="input-row">
+                <input type="text" class="input-field" id="prop-diameter" value="15" placeholder="Diameter" style="width: 80px;">
+                <span style="color: var(--text-muted);">×</span>
+                <input type="text" class="input-field" id="prop-pitch" value="5.5" placeholder="Pitch" style="width: 80px;">
+                <span style="color: var(--text-muted); font-size: 0.85rem;">inches</span>
+              </div>
+              <div id="prop-error" class="input-error" style="display: none;"></div>
+            </div>
+
+            <!-- Throttle -->
+            <div class="input-group">
+              <label class="input-label">
+                Throttle
+                <span class="input-unit">%</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="throttle-slider" min="0" max="100" value="75" step="1">
+                <input type="text" class="slider-value" id="throttle-value" value="75">
+              </div>
+            </div>
+
+            <!-- Advanced Settings Toggle -->
+            <button class="advanced-toggle" id="advanced-toggle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+              Advanced Settings
+            </button>
+            
+            <div class="advanced-content" id="advanced-content">
+              <!-- Motor Efficiency -->
+              <div class="input-group">
+                <label class="input-label">
+                  Motor Efficiency
+                  <span class="input-unit">%</span>
+                </label>
+                <div class="input-row">
+                  <input type="text" class="input-field" id="motor-efficiency" value="85" style="width: 100px;">
+                </div>
+              </div>
+
+              <!-- Prop Efficiency -->
+              <div class="input-group">
+                <label class="input-label">
+                  Propeller Efficiency
+                  <span class="input-unit">%</span>
+                </label>
+                <div class="input-row">
+                  <input type="text" class="input-field" id="prop-efficiency" value="70" style="width: 100px;">
+                </div>
+              </div>
+
+              <!-- Battery Internal Resistance -->
+              <div class="input-group">
+                <label class="input-label">
+                  Cell Internal Resistance
+                  <span class="input-unit">mΩ</span>
+                </label>
+                <div class="input-row">
+                  <input type="text" class="input-field" id="cell-resistance" value="5" style="width: 100px;">
+                </div>
+              </div>
+
+              <!-- Number of Motors -->
+              <div class="input-group">
+                <label class="input-label">
+                  Number of Motors
+                </label>
+                <select class="select-field" id="num-motors">
+                  <option value="1">1 (Single)</option>
+                  <option value="2">2 (Bicopter)</option>
+                  <option value="3">3 (Tricopter)</option>
+                  <option value="4" selected>4 (Quadcopter)</option>
+                  <option value="6">6 (Hexacopter)</option>
+                  <option value="8">8 (Octocopter)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visualization Area -->
+          <div class="card viz-area">
+            <h2 class="card-title">Visualization</h2>
+            <div class="viz-canvas-container">
+              <canvas id="viz-canvas" class="viz-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Results Panel -->
+          <div class="card results-panel">
+            <h2 class="card-title">Results</h2>
+            
+            <div class="result-item">
+              <div class="result-label">Estimated Thrust (per motor)</div>
+              <div class="result-value highlight" id="result-thrust">—<span class="unit">g</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Total System Thrust</div>
+              <div class="result-value" id="result-total-thrust">—<span class="unit">g</span></div>
+              <div class="result-subtext" id="result-thrust-kg"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Motor RPM</div>
+              <div class="result-value" id="result-rpm">—<span class="unit">RPM</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Current Draw (per motor)</div>
+              <div class="result-value" id="result-current">—<span class="unit">A</span></div>
+              <div class="result-subtext" id="result-current-status"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Total System Current</div>
+              <div class="result-value" id="result-total-current">—<span class="unit">A</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Power (per motor)</div>
+              <div class="result-value" id="result-power">—<span class="unit">W</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Total System Power</div>
+              <div class="result-value" id="result-total-power">—<span class="unit">W</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Battery Voltage</div>
+              <div class="result-value" id="result-voltage">—<span class="unit">V</span></div>
+              <div class="result-subtext" id="result-voltage-range"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Efficiency</div>
+              <div class="result-value" id="result-efficiency">—<span class="unit">g/W</span></div>
+            </div>
+
+            <!-- Share Section -->
+            <div class="share-section">
+              <button class="btn btn-primary btn-full" id="share-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                  <polyline points="16 6 12 2 8 6"/>
+                  <line x1="12" y1="2" x2="12" y2="15"/>
+                </svg>
+                Copy Link to Share
+              </button>
+            </div>
+
+            <!-- Use in other calculators -->
+            <div class="use-in-section" id="use-in-section">
+              <div class="use-in-title">Use these results in:</div>
+              <div class="use-in-links" id="use-in-links">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+      </svg>
+    </button>
+  </div>
+
+  <script src="flightbench.js"></script>
+  <script>
+    // Power System Calculator Logic
+    const PowerCalc = {
+      // Constants
+      VOLTS_PER_CELL: 3.7,  // Nominal LiPo voltage
+      VOLTS_PER_CELL_MAX: 4.2,
+      VOLTS_PER_CELL_MIN: 3.3,
+
+      // Current state
+      state: {
+        kv: 920,
+        cells: 6,
+        propDiameter: 15,
+        propPitch: 5.5,
+        throttle: 75,
+        motorEfficiency: 85,
+        propEfficiency: 70,
+        cellResistance: 5,
+        numMotors: 4
+      },
+
+      // Animation state
+      animation: {
+        currentRpm: 0,
+        targetRpm: 0,
+        propAngle: 0,
+        frameId: null
+      },
+
+      // Initialize
+      init() {
+        this.bindInputs();
+        this.loadFromUrl();
+        this.calculate();
+        this.initCanvas();
+        this.startAnimation();
+      },
+
+      // Bind all input events
+      bindInputs() {
+        // Slider + value pairs
+        this.bindSlider('kv', 'kv-slider', 'kv-value');
+        this.bindSlider('cells', 'cells-slider', 'cells-value');
+        this.bindSlider('throttle', 'throttle-slider', 'throttle-value');
+
+        // Direct inputs
+        this.bindInput('propDiameter', 'prop-diameter');
+        this.bindInput('propPitch', 'prop-pitch');
+        this.bindInput('motorEfficiency', 'motor-efficiency');
+        this.bindInput('propEfficiency', 'prop-efficiency');
+        this.bindInput('cellResistance', 'cell-resistance');
+
+        // Select
+        document.getElementById('num-motors').addEventListener('change', (e) => {
+          this.state.numMotors = parseInt(e.target.value);
+          this.calculate();
+        });
+
+        // Share button
+        document.getElementById('share-btn').addEventListener('click', () => {
+          FlightBench.state.copyShareUrl();
+        });
+      },
+
+      bindSlider(stateKey, sliderId, valueId) {
+        const slider = document.getElementById(sliderId);
+        const valueInput = document.getElementById(valueId);
+
+        const update = (val) => {
+          const num = parseFloat(val);
+          if (!isNaN(num)) {
+            this.state[stateKey] = num;
+            slider.value = num;
+            valueInput.value = num;
+            this.calculate();
+          }
+        };
+
+        slider.addEventListener('input', (e) => update(e.target.value));
+        valueInput.addEventListener('change', (e) => update(e.target.value));
+        valueInput.addEventListener('keyup', (e) => {
+          if (e.key === 'Enter') update(e.target.value);
+        });
+      },
+
+      bindInput(stateKey, inputId) {
+        const input = document.getElementById(inputId);
+        input.addEventListener('change', (e) => {
+          const num = parseFloat(e.target.value);
+          if (!isNaN(num)) {
+            this.state[stateKey] = num;
+            this.calculate();
+          }
+        });
+      },
+
+      // Load state from URL
+      loadFromUrl() {
+        const urlState = FlightBench.state.getAll();
+        
+        if (urlState.kv) {
+          this.state.kv = urlState.kv;
+          document.getElementById('kv-slider').value = urlState.kv;
+          document.getElementById('kv-value').value = urlState.kv;
+        }
+        if (urlState.cells) {
+          this.state.cells = urlState.cells;
+          document.getElementById('cells-slider').value = urlState.cells;
+          document.getElementById('cells-value').value = urlState.cells;
+        }
+        if (urlState.propD) {
+          this.state.propDiameter = urlState.propD;
+          document.getElementById('prop-diameter').value = urlState.propD;
+        }
+        if (urlState.propP) {
+          this.state.propPitch = urlState.propP;
+          document.getElementById('prop-pitch').value = urlState.propP;
+        }
+        if (urlState.throttle) {
+          this.state.throttle = urlState.throttle;
+          document.getElementById('throttle-slider').value = urlState.throttle;
+          document.getElementById('throttle-value').value = urlState.throttle;
+        }
+        if (urlState.motors) {
+          this.state.numMotors = urlState.motors;
+          document.getElementById('num-motors').value = urlState.motors;
+        }
+      },
+
+      // Save state to URL
+      saveToUrl() {
+        FlightBench.state.set({
+          kv: this.state.kv,
+          cells: this.state.cells,
+          propD: this.state.propDiameter,
+          propP: this.state.propPitch,
+          throttle: this.state.throttle,
+          motors: this.state.numMotors
+        });
+      },
+
+      // Main calculation
+      calculate() {
+        const s = this.state;
+        
+        // Battery voltage (nominal)
+        const voltage = s.cells * this.VOLTS_PER_CELL;
+        const voltageMax = s.cells * this.VOLTS_PER_CELL_MAX;
+        const voltageMin = s.cells * this.VOLTS_PER_CELL_MIN;
+
+        // Motor RPM at throttle
+        const maxRpm = s.kv * voltage;
+        const rpm = maxRpm * (s.throttle / 100);
+
+        // Propeller calculations using simplified thrust equation
+        // Thrust (grams) ≈ k * D^4 * P * RPM^2 where k is a coefficient
+        // This is a simplified model - real thrust depends on many factors
+        const thrustCoeff = 1.0e-10; // Empirical coefficient
+        const propD = s.propDiameter;
+        const propP = s.propPitch;
+        
+        // Thrust per motor in grams
+        const thrust = thrustCoeff * Math.pow(propD, 4) * propP * Math.pow(rpm, 2) * (s.propEfficiency / 100);
+        
+        // Power calculation
+        // Mechanical power = thrust * pitch_speed (simplified)
+        // Electrical power = mechanical power / efficiency
+        const pitchSpeed = (propP / 12) * (rpm / 60); // ft/s
+        const mechPower = thrust * 9.81 / 1000 * pitchSpeed * 0.3048; // Watts (approximate)
+        const elecPower = mechPower / (s.motorEfficiency / 100);
+        
+        // More realistic power model based on prop loading
+        // Power ≈ k * D^5 * RPM^3 (simplified)
+        const powerCoeff = 5.0e-15;
+        const power = powerCoeff * Math.pow(propD, 5) * Math.pow(rpm, 3) / (s.motorEfficiency / 100);
+        
+        // Current draw
+        const current = power / voltage;
+
+        // Total system values
+        const totalThrust = thrust * s.numMotors;
+        const totalCurrent = current * s.numMotors;
+        const totalPower = power * s.numMotors;
+
+        // Efficiency (grams per watt)
+        const efficiency = thrust / power;
+
+        // Update animation target
+        this.animation.targetRpm = rpm;
+
+        // Update results display
+        this.updateResults({
+          thrust: thrust,
+          totalThrust: totalThrust,
+          rpm: rpm,
+          current: current,
+          totalCurrent: totalCurrent,
+          power: power,
+          totalPower: totalPower,
+          voltage: voltage,
+          voltageMax: voltageMax,
+          voltageMin: voltageMin,
+          efficiency: efficiency
+        });
+
+        // Save to URL
+        this.saveToUrl();
+      },
+
+      updateResults(r) {
+        document.getElementById('result-thrust').innerHTML = 
+          `${r.thrust.toFixed(0)}<span class="unit">g</span>`;
+        
+        document.getElementById('result-total-thrust').innerHTML = 
+          `${r.totalThrust.toFixed(0)}<span class="unit">g</span>`;
+        document.getElementById('result-thrust-kg').textContent = 
+          `${(r.totalThrust / 1000).toFixed(2)} kg`;
+
+        document.getElementById('result-rpm').innerHTML = 
+          `${r.rpm.toFixed(0)}<span class="unit">RPM</span>`;
+
+        document.getElementById('result-current').innerHTML = 
+          `${r.current.toFixed(1)}<span class="unit">A</span>`;
+        
+        // Current status indicator
+        const currentStatus = document.getElementById('result-current-status');
+        if (r.current > 40) {
+          currentStatus.textContent = '⚠️ High current - check ESC rating';
+          currentStatus.className = 'result-subtext status-warning';
+        } else if (r.current > 30) {
+          currentStatus.textContent = 'Moderate current draw';
+          currentStatus.className = 'result-subtext status-warning';
+        } else {
+          currentStatus.textContent = 'Within typical range';
+          currentStatus.className = 'result-subtext status-good';
+        }
+
+        document.getElementById('result-total-current').innerHTML = 
+          `${r.totalCurrent.toFixed(1)}<span class="unit">A</span>`;
+
+        document.getElementById('result-power').innerHTML = 
+          `${r.power.toFixed(0)}<span class="unit">W</span>`;
+
+        document.getElementById('result-total-power').innerHTML = 
+          `${r.totalPower.toFixed(0)}<span class="unit">W</span>`;
+
+        document.getElementById('result-voltage').innerHTML = 
+          `${r.voltage.toFixed(1)}<span class="unit">V</span>`;
+        document.getElementById('result-voltage-range').textContent = 
+          `${r.voltageMin.toFixed(1)}V - ${r.voltageMax.toFixed(1)}V`;
+
+        document.getElementById('result-efficiency').innerHTML = 
+          `${r.efficiency.toFixed(2)}<span class="unit">g/W</span>`;
+
+        // Update use-in links
+        this.updateUseInLinks(r);
+      },
+
+      updateUseInLinks(r) {
+        const container = document.getElementById('use-in-links');
+        container.innerHTML = '';
+
+        // Flight time calculator link
+        const flightTimeLink = document.createElement('a');
+        flightTimeLink.href = `flight-time.html?current=${r.totalCurrent.toFixed(1)}&v=${r.voltage.toFixed(1)}`;
+        flightTimeLink.className = 'use-in-link';
+        flightTimeLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Flight Time (${r.totalCurrent.toFixed(1)}A draw)
+        `;
+        container.appendChild(flightTimeLink);
+
+        // Wire gauge link
+        const wireLink = document.createElement('a');
+        wireLink.href = `wire-gauge.html?current=${Math.ceil(r.totalCurrent)}&voltage=${r.voltage.toFixed(1)}`;
+        wireLink.className = 'use-in-link';
+        wireLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          Wire Gauge (${r.totalCurrent.toFixed(1)}A)
+        `;
+        container.appendChild(wireLink);
+      },
+
+      // Canvas visualization
+      canvas: null,
+      ctx: null,
+
+      initCanvas() {
+        this.canvas = document.getElementById('viz-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.resizeCanvas();
+        window.addEventListener('resize', () => this.resizeCanvas());
+      },
+
+      resizeCanvas() {
+        const container = this.canvas.parentElement;
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = container.clientWidth * dpr;
+        this.canvas.height = container.clientHeight * dpr;
+        this.canvas.style.width = container.clientWidth + 'px';
+        this.canvas.style.height = container.clientHeight + 'px';
+        this.ctx.scale(dpr, dpr);
+      },
+
+      startAnimation() {
+        const animate = () => {
+          this.animation.frameId = requestAnimationFrame(animate);
+          this.updateAnimation();
+          this.drawVisualization();
+        };
+        animate();
+      },
+
+      updateAnimation() {
+        // Smooth RPM interpolation
+        const lerpFactor = 0.08;
+        this.animation.currentRpm = FlightBench.lerp(
+          this.animation.currentRpm,
+          this.animation.targetRpm,
+          lerpFactor
+        );
+
+        // Update prop angle based on RPM
+        // Convert RPM to radians per frame (assuming 60fps)
+        const rps = this.animation.currentRpm / 60;
+        const radiansPerFrame = (rps * 2 * Math.PI) / 60;
+        this.animation.propAngle += radiansPerFrame;
+      },
+
+      drawVisualization() {
+        const ctx = this.ctx;
+        const w = this.canvas.clientWidth;
+        const h = this.canvas.clientHeight;
+        
+        // Get theme colors
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const bgColor = isDark ? '#1e1e1e' : '#f0f0f0';
+        const motorColor = isDark ? '#404040' : '#888888';
+        const propColor = '#eebb3e';
+        const textColor = isDark ? '#f0f0f0' : '#1a1a1a';
+        const mutedColor = isDark ? '#707070' : '#888888';
+
+        // Clear canvas
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, w, h);
+
+        // Center point
+        const cx = w / 2;
+        const cy = h / 2;
+
+        // Motor body
+        const motorRadius = Math.min(w, h) * 0.12;
+        const motorHeight = motorRadius * 0.6;
+
+        // Draw motor base (cylinder side view representation)
+        ctx.fillStyle = motorColor;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + motorHeight/2, motorRadius * 0.8, motorRadius * 0.25, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Motor body
+        ctx.fillStyle = isDark ? '#505050' : '#707070';
+        ctx.fillRect(cx - motorRadius * 0.8, cy - motorHeight/2, motorRadius * 1.6, motorHeight);
+
+        // Motor top
+        ctx.fillStyle = motorColor;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy - motorHeight/2, motorRadius * 0.8, motorRadius * 0.25, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Bell housing (rotating part)
+        const bellRadius = motorRadius * 0.65;
+        ctx.fillStyle = isDark ? '#606060' : '#555555';
+        ctx.beginPath();
+        ctx.ellipse(cx, cy - motorHeight/2 - 5, bellRadius, bellRadius * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Prop hub
+        const hubRadius = motorRadius * 0.25;
+        ctx.fillStyle = '#333333';
+        ctx.beginPath();
+        ctx.arc(cx, cy - motorHeight/2 - 10, hubRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Propeller blades
+        const propRadius = Math.min(w, h) * 0.35;
+        const bladeWidth = propRadius * 0.12;
+        const numBlades = 2;
+
+        ctx.save();
+        ctx.translate(cx, cy - motorHeight/2 - 10);
+        ctx.rotate(this.animation.propAngle);
+
+        for (let i = 0; i < numBlades; i++) {
+          ctx.save();
+          ctx.rotate((i * Math.PI * 2) / numBlades);
+          
+          // Blade gradient
+          const gradient = ctx.createLinearGradient(0, 0, propRadius, 0);
+          gradient.addColorStop(0, propColor);
+          gradient.addColorStop(0.7, propColor);
+          gradient.addColorStop(1, isDark ? '#996600' : '#cc9900');
+
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          
+          // Blade shape (tapered)
+          ctx.moveTo(hubRadius * 0.8, -bladeWidth * 0.3);
+          ctx.quadraticCurveTo(propRadius * 0.5, -bladeWidth * 0.8, propRadius, -bladeWidth * 0.1);
+          ctx.lineTo(propRadius, bladeWidth * 0.1);
+          ctx.quadraticCurveTo(propRadius * 0.5, bladeWidth * 0.6, hubRadius * 0.8, bladeWidth * 0.3);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.restore();
+        }
+
+        ctx.restore();
+
+        // RPM indicator
+        ctx.fillStyle = textColor;
+        ctx.font = '600 24px "Space Grotesk", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${Math.round(this.animation.currentRpm).toLocaleString()} RPM`, cx, h - 60);
+
+        // Prop size label
+        ctx.fillStyle = mutedColor;
+        ctx.font = '500 14px "DM Sans", sans-serif';
+        ctx.fillText(`${this.state.propDiameter}×${this.state.propPitch}" propeller`, cx, h - 35);
+
+        // Throttle indicator arc
+        const arcRadius = Math.min(w, h) * 0.42;
+        const arcWidth = 8;
+        const startAngle = Math.PI * 0.75;
+        const endAngle = Math.PI * 0.25;
+        const throttleAngle = startAngle + (endAngle - startAngle + Math.PI * 2) % (Math.PI * 2) * (this.state.throttle / 100);
+
+        // Background arc
+        ctx.strokeStyle = isDark ? '#333333' : '#dddddd';
+        ctx.lineWidth = arcWidth;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.arc(cx, cy + 20, arcRadius, startAngle, endAngle + Math.PI * 2);
+        ctx.stroke();
+
+        // Throttle arc
+        ctx.strokeStyle = propColor;
+        ctx.beginPath();
+        ctx.arc(cx, cy + 20, arcRadius, startAngle, throttleAngle);
+        ctx.stroke();
+
+        // Throttle label
+        ctx.fillStyle = propColor;
+        ctx.font = '600 16px "JetBrains Mono", monospace';
+        ctx.fillText(`${this.state.throttle}%`, cx, cy + 20 + arcRadius + 25);
+      }
+    };
+
+    // Initialize calculator when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      PowerCalc.init();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Range Estimator - FlightBench</title>
+  <meta name="description" content="Estimate maximum flight range for your UAV based on battery capacity, cruise speed, and power consumption. Plan missions with confidence.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23eebb3e' rx='20' width='100' height='100'/><path d='M50 20 L70 45 L60 45 L60 80 L40 80 L40 45 L30 45 Z' fill='%231a1a1a'/></svg>">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L15 9H21L16 14L18 22L12 18L6 22L8 14L3 9H9L12 2Z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Flight<span>Bench</span></span>
+        </a>
+      </div>
+
+      <div class="sidebar-search">
+        <input type="text" class="search-input" placeholder="Search calculators..." aria-label="Search calculators">
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-category">
+          <div class="nav-category-title">Power System</div>
+          <a href="power-system.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            Power System Calculator
+          </a>
+          <a href="wire-gauge.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            Wire Gauge Calculator
+          </a>
+          <a href="battery-config.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M22 11v4"/>
+              <path d="M6 11v6"/>
+              <path d="M10 11v6"/>
+              <path d="M14 11v6"/>
+              <path d="M18 11v6"/>
+            </svg>
+            Battery Configuration
+          </a>
+        </div>
+
+        <div class="nav-category">
+          <div class="nav-category-title">Mission Planning</div>
+          <a href="flight-time.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Flight Time Estimator
+          </a>
+          <a href="range-estimator.html" class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            Range Estimator
+          </a>
+        </div>
+
+        <div class="nav-category">
+          <div class="nav-category-title">Mechanical</div>
+          <a href="thrust-weight.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M2 12h20"/>
+              <circle cx="12" cy="12" r="4"/>
+            </svg>
+            Thrust-to-Weight Ratio
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="page-header">
+        <h1>Range Estimator</h1>
+        <p>Estimate maximum flight range based on battery, cruise speed, and payload configuration.</p>
+      </header>
+
+      <div class="calculator-container">
+        <div class="calculator-grid">
+          <!-- Inputs Panel -->
+          <div class="card inputs-panel">
+            <h2 class="card-title">Battery & Power</h2>
+
+            <!-- Battery Capacity -->
+            <div class="input-group">
+              <label class="input-label">
+                Battery Capacity
+                <span class="input-unit">mAh</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="capacity-slider" min="100" max="30000" value="5000" step="100">
+                <input type="text" class="slider-value" id="capacity-value" value="5000">
+              </div>
+            </div>
+
+            <!-- Battery Voltage -->
+            <div class="input-group">
+              <label class="input-label">
+                Battery Voltage
+                <span class="input-unit">V</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="voltage-slider" min="3.7" max="52" value="22.2" step="0.1">
+                <input type="text" class="slider-value" id="voltage-value" value="22.2">
+              </div>
+            </div>
+
+            <!-- Average Power -->
+            <div class="input-group">
+              <label class="input-label">
+                Cruise Power Consumption
+                <span class="input-unit">Watts</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="power-slider" min="10" max="3000" value="400" step="10">
+                <input type="text" class="slider-value" id="power-value" value="400">
+              </div>
+              <div class="input-hint">Power at cruise speed (typically 50-70% of hover power)</div>
+            </div>
+
+            <hr class="divider">
+
+            <h2 class="card-title">Flight Profile</h2>
+
+            <!-- Cruise Speed -->
+            <div class="input-group">
+              <label class="input-label">
+                Cruise Speed
+              </label>
+              <div class="input-row">
+                <input type="text" class="input-field" id="speed-value" value="40" style="width: 80px;">
+                <select class="select-field" id="speed-unit" style="width: 100px;">
+                  <option value="kmh" selected>km/h</option>
+                  <option value="mph">mph</option>
+                  <option value="ms">m/s</option>
+                  <option value="kts">knots</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Mission Type -->
+            <div class="input-group">
+              <label class="input-label">Mission Type</label>
+              <select class="select-field" id="mission-type">
+                <option value="oneway">One-way (no return)</option>
+                <option value="return" selected>Round-trip (return to home)</option>
+                <option value="survey">Survey (outbound + pattern + return)</option>
+              </select>
+            </div>
+
+            <!-- Advanced Settings Toggle -->
+            <button class="advanced-toggle" id="advanced-toggle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+              Advanced Settings
+            </button>
+
+            <div class="advanced-content" id="advanced-content">
+              <!-- Usable Capacity -->
+              <div class="input-group">
+                <label class="input-label">
+                  Usable Battery Capacity
+                  <span class="input-unit">%</span>
+                </label>
+                <div class="slider-container">
+                  <input type="range" class="slider" id="usable-slider" min="50" max="100" value="80" step="5">
+                  <input type="text" class="slider-value" id="usable-value" value="80">
+                </div>
+              </div>
+
+              <!-- Reserve -->
+              <div class="input-group">
+                <label class="input-label">
+                  Landing Reserve
+                  <span class="input-unit">%</span>
+                </label>
+                <div class="input-row">
+                  <input type="text" class="input-field" id="reserve-input" value="20" style="width: 100px;">
+                </div>
+              </div>
+
+              <!-- Headwind -->
+              <div class="input-group">
+                <label class="input-label">
+                  Headwind (outbound)
+                </label>
+                <div class="input-row">
+                  <input type="text" class="input-field" id="headwind-input" value="0" style="width: 80px;">
+                  <span style="color: var(--text-muted); font-size: 0.85rem;">km/h</span>
+                </div>
+                <div class="input-hint">Reduces outbound speed, increases return speed</div>
+              </div>
+
+              <!-- Survey Pattern -->
+              <div class="input-group" id="survey-options" style="display: none;">
+                <label class="input-label">
+                  Survey Area Coverage
+                  <span class="input-unit">% of range</span>
+                </label>
+                <div class="input-row">
+                  <input type="text" class="input-field" id="survey-coverage" value="50" style="width: 100px;">
+                </div>
+                <div class="input-hint">Percentage of available range used for survey pattern</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visualization Area -->
+          <div class="card viz-area">
+            <h2 class="card-title">Energy Allocation</h2>
+
+            <!-- Max Range Display -->
+            <div class="range-hero">
+              <div class="range-hero-value" id="viz-range">0</div>
+              <div class="range-hero-unit">km max range</div>
+            </div>
+
+            <!-- Energy Bar -->
+            <div class="energy-bar-section">
+              <div class="energy-bar-label">Battery Energy</div>
+              <div class="energy-bar-container">
+                <div class="energy-bar">
+                  <div class="energy-segment outbound" id="bar-outbound"></div>
+                  <div class="energy-segment survey" id="bar-survey"></div>
+                  <div class="energy-segment return" id="bar-return"></div>
+                  <div class="energy-segment reserve" id="bar-reserve"></div>
+                  <div class="energy-segment unusable" id="bar-unusable"></div>
+                </div>
+              </div>
+              <div class="energy-bar-scale">
+                <span>0 Wh</span>
+                <span id="energy-total-label">0 Wh</span>
+              </div>
+            </div>
+
+            <!-- Segment Legend -->
+            <div class="energy-legend">
+              <div class="energy-legend-item">
+                <span class="energy-legend-color outbound"></span>
+                <div class="energy-legend-text">
+                  <span class="energy-legend-label">Outbound</span>
+                  <span class="energy-legend-value" id="legend-outbound-wh">0 Wh</span>
+                </div>
+              </div>
+              <div class="energy-legend-item" id="legend-survey-item" style="display: none;">
+                <span class="energy-legend-color survey"></span>
+                <div class="energy-legend-text">
+                  <span class="energy-legend-label">Survey</span>
+                  <span class="energy-legend-value" id="legend-survey-wh">0 Wh</span>
+                </div>
+              </div>
+              <div class="energy-legend-item" id="legend-return-item">
+                <span class="energy-legend-color return"></span>
+                <div class="energy-legend-text">
+                  <span class="energy-legend-label">Return</span>
+                  <span class="energy-legend-value" id="legend-return-wh">0 Wh</span>
+                </div>
+              </div>
+              <div class="energy-legend-item">
+                <span class="energy-legend-color reserve"></span>
+                <div class="energy-legend-text">
+                  <span class="energy-legend-label">Reserve</span>
+                  <span class="energy-legend-value" id="legend-reserve-wh">0 Wh</span>
+                </div>
+              </div>
+              <div class="energy-legend-item">
+                <span class="energy-legend-color unusable"></span>
+                <div class="energy-legend-text">
+                  <span class="energy-legend-label">Unusable</span>
+                  <span class="energy-legend-value" id="legend-unusable-wh">0 Wh</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Distance Bar -->
+            <div class="energy-bar-section" style="margin-top: 24px;">
+              <div class="energy-bar-label">Distance Covered</div>
+              <div class="energy-bar-container">
+                <div class="energy-bar">
+                  <div class="energy-segment outbound" id="dist-outbound"></div>
+                  <div class="energy-segment survey" id="dist-survey"></div>
+                  <div class="energy-segment return" id="dist-return"></div>
+                </div>
+              </div>
+              <div class="energy-bar-scale">
+                <span>0 km</span>
+                <span id="dist-total-label">0 km</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Results Panel -->
+          <div class="card results-panel">
+            <h2 class="card-title">Results</h2>
+
+            <div class="result-item">
+              <div class="result-label">Maximum Range</div>
+              <div class="result-value highlight" id="result-range">—<span class="unit">km</span></div>
+              <div class="result-subtext" id="result-range-miles"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Outbound Distance</div>
+              <div class="result-value" id="result-outbound">—<span class="unit">km</span></div>
+              <div class="result-subtext" id="result-outbound-note"></div>
+            </div>
+
+            <div class="result-item" id="result-survey-row" style="display: none;">
+              <div class="result-label">Survey Distance</div>
+              <div class="result-value" id="result-survey">—<span class="unit">km</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Flight Time</div>
+              <div class="result-value" id="result-time">—<span class="unit">min</span></div>
+              <div class="result-subtext" id="result-time-note"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Ground Speed (out)</div>
+              <div class="result-value" id="result-speed-out">—<span class="unit">km/h</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Ground Speed (return)</div>
+              <div class="result-value" id="result-speed-return">—<span class="unit">km/h</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Energy Available</div>
+              <div class="result-value" id="result-energy">—<span class="unit">Wh</span></div>
+              <div class="result-subtext" id="result-energy-note"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Energy Efficiency</div>
+              <div class="result-value" id="result-efficiency">—<span class="unit">Wh/km</span></div>
+            </div>
+
+            <!-- Share Section -->
+            <div class="share-section">
+              <button class="btn btn-primary btn-full" id="share-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                  <polyline points="16 6 12 2 8 6"/>
+                  <line x1="12" y1="2" x2="12" y2="15"/>
+                </svg>
+                Copy Link to Share
+              </button>
+            </div>
+
+            <!-- Use in other calculators -->
+            <div class="use-in-section" id="use-in-section">
+              <div class="use-in-title">Related calculators:</div>
+              <div class="use-in-links" id="use-in-links">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+      </svg>
+    </button>
+  </div>
+
+  <script src="flightbench.js"></script>
+  <script>
+    // Range Estimator Logic
+    const RangeCalc = {
+      // Speed conversion factors to km/h
+      SPEED_FACTORS: {
+        kmh: 1,
+        mph: 1.60934,
+        ms: 3.6,
+        kts: 1.852
+      },
+
+      // Current state
+      state: {
+        capacity: 5000,      // mAh
+        voltage: 22.2,       // V
+        power: 400,          // W
+        speed: 40,           // in selected unit
+        speedUnit: 'kmh',
+        missionType: 'return',
+        usableCapacity: 80,  // %
+        reserve: 20,         // %
+        headwind: 0,         // km/h
+        surveyCoverage: 50   // %
+      },
+
+      // Initialize
+      init() {
+        this.bindInputs();
+        this.loadFromUrl();
+        this.calculate();
+      },
+
+      // Bind all input events
+      bindInputs() {
+        // Slider + value pairs
+        this.bindSlider('capacity', 'capacity-slider', 'capacity-value');
+        this.bindSlider('voltage', 'voltage-slider', 'voltage-value');
+        this.bindSlider('power', 'power-slider', 'power-value');
+        this.bindSlider('usableCapacity', 'usable-slider', 'usable-value');
+
+        // Speed input
+        document.getElementById('speed-value').addEventListener('change', (e) => {
+          const num = parseFloat(e.target.value);
+          if (!isNaN(num)) {
+            this.state.speed = num;
+            this.calculate();
+          }
+        });
+
+        document.getElementById('speed-unit').addEventListener('change', (e) => {
+          this.state.speedUnit = e.target.value;
+          this.calculate();
+        });
+
+        // Mission type
+        document.getElementById('mission-type').addEventListener('change', (e) => {
+          this.state.missionType = e.target.value;
+          this.updateMissionUI();
+          this.calculate();
+        });
+
+        // Direct inputs
+        this.bindInput('reserve', 'reserve-input');
+        this.bindInput('headwind', 'headwind-input');
+        this.bindInput('surveyCoverage', 'survey-coverage');
+
+        // Share button
+        document.getElementById('share-btn').addEventListener('click', () => {
+          FlightBench.state.copyShareUrl();
+        });
+      },
+
+      bindSlider(stateKey, sliderId, valueId) {
+        const slider = document.getElementById(sliderId);
+        const valueInput = document.getElementById(valueId);
+
+        const update = (val) => {
+          const num = parseFloat(val);
+          if (!isNaN(num)) {
+            this.state[stateKey] = num;
+            slider.value = num;
+            valueInput.value = num;
+            this.calculate();
+          }
+        };
+
+        slider.addEventListener('input', (e) => update(e.target.value));
+        valueInput.addEventListener('change', (e) => update(e.target.value));
+        valueInput.addEventListener('keyup', (e) => {
+          if (e.key === 'Enter') update(e.target.value);
+        });
+      },
+
+      bindInput(stateKey, inputId) {
+        const input = document.getElementById(inputId);
+        input.addEventListener('change', (e) => {
+          const num = parseFloat(e.target.value);
+          if (!isNaN(num)) {
+            this.state[stateKey] = num;
+            this.calculate();
+          }
+        });
+      },
+
+      updateMissionUI() {
+        const surveyOptions = document.getElementById('survey-options');
+        const surveyLegendItem = document.getElementById('legend-survey-item');
+        const returnLegendItem = document.getElementById('legend-return-item');
+        const surveyRow = document.getElementById('result-survey-row');
+
+        if (this.state.missionType === 'survey') {
+          surveyOptions.style.display = 'block';
+          surveyLegendItem.style.display = 'flex';
+          returnLegendItem.style.display = 'flex';
+          surveyRow.style.display = 'block';
+        } else if (this.state.missionType === 'return') {
+          surveyOptions.style.display = 'none';
+          surveyLegendItem.style.display = 'none';
+          returnLegendItem.style.display = 'flex';
+          surveyRow.style.display = 'none';
+        } else {
+          // One-way
+          surveyOptions.style.display = 'none';
+          surveyLegendItem.style.display = 'none';
+          returnLegendItem.style.display = 'none';
+          surveyRow.style.display = 'none';
+        }
+      },
+
+      // Load state from URL
+      loadFromUrl() {
+        const urlState = FlightBench.state.getAll();
+
+        if (urlState.cap) {
+          this.state.capacity = urlState.cap;
+          document.getElementById('capacity-slider').value = urlState.cap;
+          document.getElementById('capacity-value').value = urlState.cap;
+        }
+        if (urlState.v) {
+          this.state.voltage = urlState.v;
+          document.getElementById('voltage-slider').value = urlState.v;
+          document.getElementById('voltage-value').value = urlState.v;
+        }
+        if (urlState.power) {
+          this.state.power = urlState.power;
+          document.getElementById('power-slider').value = urlState.power;
+          document.getElementById('power-value').value = urlState.power;
+        }
+        if (urlState.speed) {
+          this.state.speed = urlState.speed;
+          document.getElementById('speed-value').value = urlState.speed;
+        }
+        if (urlState.unit) {
+          this.state.speedUnit = urlState.unit;
+          document.getElementById('speed-unit').value = urlState.unit;
+        }
+        if (urlState.mission) {
+          this.state.missionType = urlState.mission;
+          document.getElementById('mission-type').value = urlState.mission;
+          this.updateMissionUI();
+        }
+      },
+
+      // Save state to URL
+      saveToUrl() {
+        FlightBench.state.set({
+          cap: this.state.capacity,
+          v: this.state.voltage,
+          power: this.state.power,
+          speed: this.state.speed,
+          unit: this.state.speedUnit,
+          mission: this.state.missionType
+        });
+      },
+
+      // Convert speed to km/h
+      getSpeedKmh() {
+        return this.state.speed * this.SPEED_FACTORS[this.state.speedUnit];
+      },
+
+      // Main calculation
+      calculate() {
+        const s = this.state;
+
+        // Total battery energy (Wh)
+        const totalEnergy = (s.capacity / 1000) * s.voltage;
+        const usableEnergy = totalEnergy * (s.usableCapacity / 100);
+        const flyableEnergy = usableEnergy * (1 - s.reserve / 100);
+
+        // Flight time available (hours)
+        const flightTimeHours = flyableEnergy / s.power;
+        const flightTimeMinutes = flightTimeHours * 60;
+
+        // Cruise speed in km/h
+        const cruiseSpeed = this.getSpeedKmh();
+
+        // Ground speeds with wind
+        const groundSpeedOut = Math.max(1, cruiseSpeed - s.headwind);
+        const groundSpeedReturn = cruiseSpeed + s.headwind;
+
+        // Calculate range based on mission type
+        let maxRange, outboundDist, surveyDist = 0, totalDist;
+
+        if (s.missionType === 'oneway') {
+          // One-way: all distance is outbound
+          maxRange = groundSpeedOut * flightTimeHours;
+          outboundDist = maxRange;
+          totalDist = maxRange;
+        } else if (s.missionType === 'return') {
+          // Round-trip: need to split time between out and back
+          // time_out = distance / speed_out
+          // time_return = distance / speed_return
+          // time_out + time_return = total_time
+          // distance/speed_out + distance/speed_return = total_time
+          // distance * (1/speed_out + 1/speed_return) = total_time
+          // distance = total_time / (1/speed_out + 1/speed_return)
+          maxRange = flightTimeHours / (1/groundSpeedOut + 1/groundSpeedReturn);
+          outboundDist = maxRange;
+          totalDist = maxRange * 2;
+        } else {
+          // Survey: outbound + survey pattern + return
+          // Survey uses surveyCoverage% of available range for the pattern
+          const surveyFraction = s.surveyCoverage / 100;
+          // Remaining for out+back
+          const transitFraction = 1 - surveyFraction;
+
+          // Transit time (out + back at same distance)
+          const transitTimeHours = flightTimeHours * transitFraction;
+          outboundDist = transitTimeHours / (1/groundSpeedOut + 1/groundSpeedReturn);
+
+          // Survey time
+          const surveyTimeHours = flightTimeHours * surveyFraction;
+          surveyDist = cruiseSpeed * surveyTimeHours; // Survey at cruise speed (no wind effect averaged)
+
+          maxRange = outboundDist; // Max distance from home
+          totalDist = outboundDist * 2 + surveyDist;
+        }
+
+        // Energy efficiency
+        const efficiency = flyableEnergy / totalDist;
+
+        // Update results display
+        this.updateResults({
+          maxRange,
+          outboundDist,
+          surveyDist,
+          totalDist,
+          flightTimeMinutes,
+          groundSpeedOut,
+          groundSpeedReturn,
+          totalEnergy,
+          usableEnergy,
+          flyableEnergy,
+          efficiency
+        });
+
+        // Update visualization
+        this.updateVisualization({
+          outboundDist,
+          surveyDist,
+          totalDist,
+          maxRange,
+          missionType: s.missionType,
+          totalEnergy,
+          usableEnergy,
+          flyableEnergy,
+          reserveEnergy: usableEnergy * (s.reserve / 100),
+          unusableEnergy: totalEnergy - usableEnergy,
+          power: s.power,
+          groundSpeedOut,
+          groundSpeedReturn,
+          cruiseSpeed
+        });
+
+        // Save to URL
+        this.saveToUrl();
+      },
+
+      updateResults(r) {
+        const toMiles = (km) => km * 0.621371;
+
+        document.getElementById('result-range').innerHTML =
+          `${r.maxRange.toFixed(1)}<span class="unit">km</span>`;
+        document.getElementById('result-range-miles').textContent =
+          `${toMiles(r.maxRange).toFixed(1)} miles`;
+
+        document.getElementById('result-outbound').innerHTML =
+          `${r.outboundDist.toFixed(1)}<span class="unit">km</span>`;
+
+        const outboundNote = document.getElementById('result-outbound-note');
+        if (this.state.missionType === 'oneway') {
+          outboundNote.textContent = 'One-way distance';
+        } else {
+          outboundNote.textContent = `${toMiles(r.outboundDist).toFixed(1)} miles from home`;
+        }
+
+        if (this.state.missionType === 'survey') {
+          document.getElementById('result-survey').innerHTML =
+            `${r.surveyDist.toFixed(1)}<span class="unit">km</span>`;
+        }
+
+        const formatTime = (mins) => {
+          if (mins >= 60) {
+            const h = Math.floor(mins / 60);
+            const m = Math.round(mins % 60);
+            return `${h}h ${m}m`;
+          }
+          return mins.toFixed(1);
+        };
+
+        document.getElementById('result-time').innerHTML =
+          `${formatTime(r.flightTimeMinutes)}<span class="unit">${r.flightTimeMinutes >= 60 ? '' : 'min'}</span>`;
+        document.getElementById('result-time-note').textContent =
+          `Total distance: ${r.totalDist.toFixed(1)} km`;
+
+        document.getElementById('result-speed-out').innerHTML =
+          `${r.groundSpeedOut.toFixed(1)}<span class="unit">km/h</span>`;
+
+        document.getElementById('result-speed-return').innerHTML =
+          `${r.groundSpeedReturn.toFixed(1)}<span class="unit">km/h</span>`;
+
+        document.getElementById('result-energy').innerHTML =
+          `${r.flyableEnergy.toFixed(1)}<span class="unit">Wh</span>`;
+        document.getElementById('result-energy-note').textContent =
+          `of ${r.totalEnergy.toFixed(1)} Wh total`;
+
+        document.getElementById('result-efficiency').innerHTML =
+          `${r.efficiency.toFixed(1)}<span class="unit">Wh/km</span>`;
+
+        // Update use-in links
+        this.updateUseInLinks(r);
+      },
+
+      // Update visualization bars
+      updateVisualization(data) {
+        // Update hero range display
+        document.getElementById('viz-range').textContent = data.maxRange.toFixed(1);
+
+        // Calculate energy for each segment based on time spent
+        const outboundTime = data.outboundDist / data.groundSpeedOut; // hours
+        const returnTime = data.missionType !== 'oneway' ? data.outboundDist / data.groundSpeedReturn : 0;
+        const surveyTime = data.missionType === 'survey' ? data.surveyDist / data.cruiseSpeed : 0;
+
+        const outboundEnergy = outboundTime * data.power;
+        const returnEnergy = returnTime * data.power;
+        const surveyEnergy = surveyTime * data.power;
+
+        // Calculate bar percentages (of total energy)
+        const total = data.totalEnergy;
+        const outPct = (outboundEnergy / total) * 100;
+        const surveyPct = (surveyEnergy / total) * 100;
+        const returnPct = (returnEnergy / total) * 100;
+        const reservePct = (data.reserveEnergy / total) * 100;
+        const unusablePct = (data.unusableEnergy / total) * 100;
+
+        // Update energy bar segments
+        document.getElementById('bar-outbound').style.width = outPct + '%';
+        document.getElementById('bar-survey').style.width = surveyPct + '%';
+        document.getElementById('bar-return').style.width = returnPct + '%';
+        document.getElementById('bar-reserve').style.width = reservePct + '%';
+        document.getElementById('bar-unusable').style.width = unusablePct + '%';
+
+        // Update energy labels
+        document.getElementById('energy-total-label').textContent = total.toFixed(0) + ' Wh';
+        document.getElementById('legend-outbound-wh').textContent = outboundEnergy.toFixed(1) + ' Wh';
+        document.getElementById('legend-survey-wh').textContent = surveyEnergy.toFixed(1) + ' Wh';
+        document.getElementById('legend-return-wh').textContent = returnEnergy.toFixed(1) + ' Wh';
+        document.getElementById('legend-reserve-wh').textContent = data.reserveEnergy.toFixed(1) + ' Wh';
+        document.getElementById('legend-unusable-wh').textContent = data.unusableEnergy.toFixed(1) + ' Wh';
+
+        // Calculate distance bar percentages
+        const totalDist = data.totalDist || 1;
+        const outDistPct = (data.outboundDist / totalDist) * 100;
+        const surveyDistPct = (data.surveyDist / totalDist) * 100;
+        const returnDistPct = data.missionType !== 'oneway' ? (data.outboundDist / totalDist) * 100 : 0;
+
+        // Update distance bar segments
+        document.getElementById('dist-outbound').style.width = outDistPct + '%';
+        document.getElementById('dist-survey').style.width = surveyDistPct + '%';
+        document.getElementById('dist-return').style.width = returnDistPct + '%';
+
+        // Update distance labels
+        document.getElementById('dist-total-label').textContent = totalDist.toFixed(1) + ' km';
+      },
+
+      updateUseInLinks(r) {
+        const container = document.getElementById('use-in-links');
+        container.innerHTML = '';
+
+        // Flight Time link
+        const flightLink = document.createElement('a');
+        flightLink.href = `flight-time.html?cap=${this.state.capacity}&v=${this.state.voltage}&power=${this.state.power}`;
+        flightLink.className = 'use-in-link';
+        flightLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Flight Time Estimator
+        `;
+        container.appendChild(flightLink);
+
+        // Battery Config link
+        const batteryLink = document.createElement('a');
+        batteryLink.href = `battery-config.html?cap=${this.state.capacity}`;
+        batteryLink.className = 'use-in-link';
+        batteryLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/>
+            <path d="M22 11v4"/>
+          </svg>
+          Battery Configuration
+        `;
+        container.appendChild(batteryLink);
+
+        // Power System link
+        const powerLink = document.createElement('a');
+        powerLink.href = `power-system.html`;
+        powerLink.className = 'use-in-link';
+        powerLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          Power System Calculator
+        `;
+        container.appendChild(powerLink);
+      }
+    };
+
+    // Initialize calculator when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      RangeCalc.init();
+    });
+  </script>
+
+  <style>
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border-color);
+      margin: 16px 0;
+    }
+
+    .input-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Range hero display */
+    .range-hero {
+      text-align: center;
+      padding: 24px 0 20px;
+    }
+
+    .range-hero-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .range-hero-unit {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Energy bar section */
+    .energy-bar-section {
+      padding: 0 16px;
+    }
+
+    .energy-bar-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .energy-bar-container {
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .energy-bar {
+      display: flex;
+      height: 24px;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .energy-segment {
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .energy-segment.outbound {
+      background: var(--accent);
+    }
+
+    .energy-segment.return {
+      background: #27ae60;
+    }
+
+    .energy-segment.survey {
+      background: #3498db;
+    }
+
+    .energy-segment.reserve {
+      background: #e74c3c;
+      opacity: 0.6;
+    }
+
+    .energy-segment.unusable {
+      background: var(--text-muted);
+      opacity: 0.3;
+    }
+
+    .energy-bar-scale {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      padding: 0 2px;
+    }
+
+    /* Energy legend */
+    .energy-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      padding: 16px;
+      margin-top: 8px;
+    }
+
+    .energy-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .energy-legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .energy-legend-color.outbound {
+      background: var(--accent);
+    }
+
+    .energy-legend-color.return {
+      background: #27ae60;
+    }
+
+    .energy-legend-color.survey {
+      background: #3498db;
+    }
+
+    .energy-legend-color.reserve {
+      background: #e74c3c;
+      opacity: 0.6;
+    }
+
+    .energy-legend-color.unusable {
+      background: var(--text-muted);
+      opacity: 0.3;
+    }
+
+    .energy-legend-text {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .energy-legend-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .energy-legend-value {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .range-hero-value {
+        font-size: 2.5rem;
+      }
+
+      .energy-legend {
+        gap: 8px 16px;
+      }
+    }
+  </style>
+</body>
+</html>

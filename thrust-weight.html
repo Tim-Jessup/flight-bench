@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thrust-to-Weight Ratio Calculator - FlightBench</title>
+  <meta name="description" content="Calculate your UAV's thrust-to-weight ratio and assess flight performance characteristics. Determine if your drone can hover, fly aggressively, or lift payloads.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23eebb3e' rx='20' width='100' height='100'/><path d='M50 20 L70 45 L60 45 L60 80 L40 80 L40 45 L30 45 Z' fill='%231a1a1a'/></svg>">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L15 9H21L16 14L18 22L12 18L6 22L8 14L3 9H9L12 2Z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Flight<span>Bench</span></span>
+        </a>
+      </div>
+
+      <div class="sidebar-search">
+        <input type="text" class="search-input" placeholder="Search calculators..." aria-label="Search calculators">
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-category">
+          <div class="nav-category-title">Power System</div>
+          <a href="power-system.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            Power System Calculator
+          </a>
+          <a href="wire-gauge.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            Wire Gauge Calculator
+          </a>
+          <a href="battery-config.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M22 11v4"/>
+              <path d="M6 11v6"/>
+              <path d="M10 11v6"/>
+              <path d="M14 11v6"/>
+              <path d="M18 11v6"/>
+            </svg>
+            Battery Configuration
+          </a>
+        </div>
+
+        <div class="nav-category">
+          <div class="nav-category-title">Mission Planning</div>
+          <a href="flight-time.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Flight Time Estimator
+          </a>
+          <a href="range-estimator.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            Range Estimator
+          </a>
+        </div>
+
+        <div class="nav-category">
+          <div class="nav-category-title">Mechanical</div>
+          <a href="thrust-weight.html" class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M2 12h20"/>
+              <circle cx="12" cy="12" r="4"/>
+            </svg>
+            Thrust-to-Weight Ratio
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="page-header">
+        <h1>Thrust-to-Weight Ratio</h1>
+        <p>Calculate your aircraft's thrust-to-weight ratio and assess flight performance characteristics.</p>
+      </header>
+
+      <div class="calculator-container">
+        <div class="calculator-grid">
+          <!-- Inputs Panel -->
+          <div class="card inputs-panel">
+            <h2 class="card-title">Inputs</h2>
+
+            <!-- Input Mode Toggle -->
+            <div class="input-group">
+              <label class="input-label">Input Mode</label>
+              <div class="toggle-group">
+                <button class="toggle-btn active" id="mode-weight" data-mode="weight">Enter Weight</button>
+                <button class="toggle-btn" id="mode-components" data-mode="components">Add Components</button>
+              </div>
+            </div>
+
+            <!-- Simple Weight Input -->
+            <div id="weight-mode">
+              <div class="input-group">
+                <label class="input-label">
+                  All-Up Weight (AUW)
+                  <span class="input-unit">grams</span>
+                </label>
+                <div class="slider-container">
+                  <input type="range" class="slider" id="weight-slider" min="50" max="10000" value="1500" step="10">
+                  <input type="text" class="slider-value" id="weight-value" value="1500">
+                </div>
+              </div>
+            </div>
+
+            <!-- Component Weight Input -->
+            <div id="components-mode" style="display: none;">
+              <div class="input-group">
+                <label class="input-label">
+                  Frame
+                  <span class="input-unit">g</span>
+                </label>
+                <input type="text" class="input-field" id="comp-frame" value="150" style="width: 100px;">
+              </div>
+              <div class="input-group">
+                <label class="input-label">
+                  Motors (total)
+                  <span class="input-unit">g</span>
+                </label>
+                <input type="text" class="input-field" id="comp-motors" value="200" style="width: 100px;">
+              </div>
+              <div class="input-group">
+                <label class="input-label">
+                  Battery
+                  <span class="input-unit">g</span>
+                </label>
+                <input type="text" class="input-field" id="comp-battery" value="500" style="width: 100px;">
+              </div>
+              <div class="input-group">
+                <label class="input-label">
+                  Flight Controller + ESCs
+                  <span class="input-unit">g</span>
+                </label>
+                <input type="text" class="input-field" id="comp-electronics" value="80" style="width: 100px;">
+              </div>
+              <div class="input-group">
+                <label class="input-label">
+                  Camera / Payload
+                  <span class="input-unit">g</span>
+                </label>
+                <input type="text" class="input-field" id="comp-payload" value="300" style="width: 100px;">
+              </div>
+              <div class="input-group">
+                <label class="input-label">
+                  Other (props, wires, etc.)
+                  <span class="input-unit">g</span>
+                </label>
+                <input type="text" class="input-field" id="comp-other" value="70" style="width: 100px;">
+              </div>
+              <div class="component-total">
+                <span>Total Weight:</span>
+                <span id="comp-total">1300g</span>
+              </div>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Thrust Input -->
+            <div class="input-group">
+              <label class="input-label">
+                Total System Thrust
+                <span class="input-unit">grams</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="thrust-slider" min="100" max="20000" value="4000" step="50">
+                <input type="text" class="slider-value" id="thrust-value" value="4000">
+              </div>
+              <div class="input-hint">Sum of all motors at 100% throttle</div>
+            </div>
+
+            <!-- Number of Motors -->
+            <div class="input-group">
+              <label class="input-label">
+                Number of Motors
+              </label>
+              <select class="select-field" id="num-motors">
+                <option value="1">1 (Single rotor)</option>
+                <option value="2">2 (Bicopter)</option>
+                <option value="3">3 (Tricopter)</option>
+                <option value="4" selected>4 (Quadcopter)</option>
+                <option value="6">6 (Hexacopter)</option>
+                <option value="8">8 (Octocopter)</option>
+              </select>
+            </div>
+
+            <!-- Advanced Settings Toggle -->
+            <button class="advanced-toggle" id="advanced-toggle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+              Advanced Settings
+            </button>
+
+            <div class="advanced-content" id="advanced-content">
+              <!-- Target TWR -->
+              <div class="input-group">
+                <label class="input-label">
+                  Target T:W Ratio
+                </label>
+                <div class="input-row">
+                  <input type="text" class="input-field" id="target-twr" value="2.0" style="width: 100px;">
+                  <span style="color: var(--text-muted);">: 1</span>
+                </div>
+                <div class="input-hint">Minimum recommended: 2:1 for stable flight</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visualization Area -->
+          <div class="card viz-area">
+            <h2 class="card-title">Performance Scale</h2>
+            <div class="twr-gauge-container">
+              <canvas id="twr-gauge" class="twr-gauge"></canvas>
+            </div>
+            <div class="performance-bands" id="performance-bands">
+              <!-- Generated by JS -->
+            </div>
+          </div>
+
+          <!-- Results Panel -->
+          <div class="card results-panel">
+            <h2 class="card-title">Results</h2>
+
+            <div class="result-item">
+              <div class="result-label">Thrust-to-Weight Ratio</div>
+              <div class="result-value highlight" id="result-twr">—<span class="unit">: 1</span></div>
+              <div class="result-subtext" id="result-twr-status"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Flight Category</div>
+              <div class="result-value" id="result-category">—</div>
+              <div class="result-subtext" id="result-category-desc"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Hover Throttle</div>
+              <div class="result-value" id="result-hover">—<span class="unit">%</span></div>
+              <div class="result-subtext" id="result-hover-note"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Max Payload Capacity</div>
+              <div class="result-value" id="result-payload">—<span class="unit">g</span></div>
+              <div class="result-subtext" id="result-payload-note"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Thrust per Motor</div>
+              <div class="result-value" id="result-per-motor">—<span class="unit">g</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Weight per Motor</div>
+              <div class="result-value" id="result-weight-motor">—<span class="unit">g</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Excess Thrust</div>
+              <div class="result-value" id="result-excess">—<span class="unit">g</span></div>
+              <div class="result-subtext" id="result-excess-note"></div>
+            </div>
+
+            <!-- Share Section -->
+            <div class="share-section">
+              <button class="btn btn-primary btn-full" id="share-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                  <polyline points="16 6 12 2 8 6"/>
+                  <line x1="12" y1="2" x2="12" y2="15"/>
+                </svg>
+                Copy Link to Share
+              </button>
+            </div>
+
+            <!-- Use in other calculators -->
+            <div class="use-in-section" id="use-in-section">
+              <div class="use-in-title">Related calculators:</div>
+              <div class="use-in-links" id="use-in-links">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+      </svg>
+    </button>
+  </div>
+
+  <script src="flightbench.js"></script>
+  <script>
+    // Thrust-to-Weight Calculator Logic
+    const TWRCalc = {
+      // Performance categories
+      CATEGORIES: [
+        { min: 0,   max: 1,   name: 'Cannot Fly', class: 'critical', desc: 'Insufficient thrust to lift off' },
+        { min: 1,   max: 1.5, name: 'Marginal', class: 'warning', desc: 'Can hover but unstable, no payload capacity' },
+        { min: 1.5, max: 2,   name: 'Light Duty', class: 'caution', desc: 'Stable hover, limited maneuverability' },
+        { min: 2,   max: 3,   name: 'Standard', class: 'good', desc: 'Good all-around performance' },
+        { min: 3,   max: 5,   name: 'Sport', class: 'great', desc: 'Agile, responsive flying' },
+        { min: 5,   max: 8,   name: 'Racing', class: 'excellent', desc: 'High-speed, aggressive maneuvers' },
+        { min: 8,   max: Infinity, name: 'Extreme', class: 'extreme', desc: 'Competition-level performance' }
+      ],
+
+      // Current state
+      state: {
+        weight: 1500,
+        thrust: 4000,
+        numMotors: 4,
+        targetTWR: 2.0,
+        inputMode: 'weight',
+        components: {
+          frame: 150,
+          motors: 200,
+          battery: 500,
+          electronics: 80,
+          payload: 300,
+          other: 70
+        }
+      },
+
+      // Animation
+      animation: {
+        currentTWR: 0,
+        targetTWR: 0,
+        frameId: null
+      },
+
+      // Initialize
+      init() {
+        this.bindInputs();
+        this.loadFromUrl();
+        this.calculate();
+        this.initGauge();
+        this.startAnimation();
+        this.renderPerformanceBands();
+      },
+
+      // Bind all input events
+      bindInputs() {
+        // Mode toggle
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            this.state.inputMode = e.target.dataset.mode;
+            this.updateInputMode();
+            this.calculate();
+          });
+        });
+
+        // Slider + value pairs
+        this.bindSlider('weight', 'weight-slider', 'weight-value');
+        this.bindSlider('thrust', 'thrust-slider', 'thrust-value');
+
+        // Component inputs
+        ['frame', 'motors', 'battery', 'electronics', 'payload', 'other'].forEach(comp => {
+          this.bindComponentInput(comp, `comp-${comp}`);
+        });
+
+        // Direct inputs
+        this.bindInput('targetTWR', 'target-twr');
+
+        // Select
+        document.getElementById('num-motors').addEventListener('change', (e) => {
+          this.state.numMotors = parseInt(e.target.value);
+          this.calculate();
+        });
+
+        // Share button
+        document.getElementById('share-btn').addEventListener('click', () => {
+          FlightBench.state.copyShareUrl();
+        });
+      },
+
+      bindSlider(stateKey, sliderId, valueId) {
+        const slider = document.getElementById(sliderId);
+        const valueInput = document.getElementById(valueId);
+
+        const update = (val) => {
+          const num = parseFloat(val);
+          if (!isNaN(num)) {
+            this.state[stateKey] = num;
+            slider.value = num;
+            valueInput.value = num;
+            this.calculate();
+          }
+        };
+
+        slider.addEventListener('input', (e) => update(e.target.value));
+        valueInput.addEventListener('change', (e) => update(e.target.value));
+        valueInput.addEventListener('keyup', (e) => {
+          if (e.key === 'Enter') update(e.target.value);
+        });
+      },
+
+      bindComponentInput(compKey, inputId) {
+        const input = document.getElementById(inputId);
+        input.addEventListener('input', (e) => {
+          const num = parseFloat(e.target.value) || 0;
+          this.state.components[compKey] = num;
+          this.updateComponentTotal();
+          this.calculate();
+        });
+      },
+
+      bindInput(stateKey, inputId) {
+        const input = document.getElementById(inputId);
+        input.addEventListener('change', (e) => {
+          const num = parseFloat(e.target.value);
+          if (!isNaN(num)) {
+            this.state[stateKey] = num;
+            this.calculate();
+          }
+        });
+      },
+
+      updateInputMode() {
+        const weightMode = document.getElementById('weight-mode');
+        const componentsMode = document.getElementById('components-mode');
+
+        if (this.state.inputMode === 'weight') {
+          weightMode.style.display = 'block';
+          componentsMode.style.display = 'none';
+        } else {
+          weightMode.style.display = 'none';
+          componentsMode.style.display = 'block';
+          this.updateComponentTotal();
+        }
+      },
+
+      updateComponentTotal() {
+        const total = Object.values(this.state.components).reduce((a, b) => a + b, 0);
+        document.getElementById('comp-total').textContent = `${total}g`;
+        this.state.weight = total;
+      },
+
+      // Load state from URL
+      loadFromUrl() {
+        const urlState = FlightBench.state.getAll();
+
+        if (urlState.weight) {
+          this.state.weight = urlState.weight;
+          document.getElementById('weight-slider').value = urlState.weight;
+          document.getElementById('weight-value').value = urlState.weight;
+        }
+        if (urlState.thrust) {
+          this.state.thrust = urlState.thrust;
+          document.getElementById('thrust-slider').value = urlState.thrust;
+          document.getElementById('thrust-value').value = urlState.thrust;
+        }
+        if (urlState.motors) {
+          this.state.numMotors = urlState.motors;
+          document.getElementById('num-motors').value = urlState.motors;
+        }
+        if (urlState.target) {
+          this.state.targetTWR = urlState.target;
+          document.getElementById('target-twr').value = urlState.target;
+        }
+      },
+
+      // Save state to URL
+      saveToUrl() {
+        FlightBench.state.set({
+          weight: this.state.weight,
+          thrust: this.state.thrust,
+          motors: this.state.numMotors,
+          target: this.state.targetTWR
+        });
+      },
+
+      // Main calculation
+      calculate() {
+        const s = this.state;
+
+        // Calculate TWR
+        const twr = s.thrust / s.weight;
+
+        // Hover throttle (theoretical)
+        const hoverThrottle = (1 / twr) * 100;
+
+        // Max additional payload (maintaining 2:1 TWR minimum)
+        const minTWR = 2.0;
+        const maxTotalWeight = s.thrust / minTWR;
+        const maxPayload = Math.max(0, maxTotalWeight - s.weight);
+
+        // Thrust per motor
+        const thrustPerMotor = s.thrust / s.numMotors;
+        const weightPerMotor = s.weight / s.numMotors;
+
+        // Excess thrust
+        const excessThrust = s.thrust - s.weight;
+
+        // Get category
+        const category = this.CATEGORIES.find(c => twr >= c.min && twr < c.max) || this.CATEGORIES[this.CATEGORIES.length - 1];
+
+        // Update animation target
+        this.animation.targetTWR = twr;
+
+        // Update results display
+        this.updateResults({
+          twr,
+          hoverThrottle,
+          maxPayload,
+          thrustPerMotor,
+          weightPerMotor,
+          excessThrust,
+          category
+        });
+
+        // Save to URL
+        this.saveToUrl();
+      },
+
+      updateResults(r) {
+        const s = this.state;
+
+        document.getElementById('result-twr').innerHTML =
+          `${r.twr.toFixed(2)}<span class="unit">: 1</span>`;
+
+        const twrStatus = document.getElementById('result-twr-status');
+        if (r.twr >= s.targetTWR) {
+          twrStatus.textContent = `Meets target of ${s.targetTWR}:1`;
+          twrStatus.className = 'result-subtext status-good';
+        } else {
+          twrStatus.textContent = `Below target of ${s.targetTWR}:1`;
+          twrStatus.className = 'result-subtext status-warning';
+        }
+
+        document.getElementById('result-category').innerHTML = r.category.name;
+        document.getElementById('result-category-desc').textContent = r.category.desc;
+
+        document.getElementById('result-hover').innerHTML =
+          `${r.hoverThrottle.toFixed(0)}<span class="unit">%</span>`;
+
+        const hoverNote = document.getElementById('result-hover-note');
+        if (r.hoverThrottle > 100) {
+          hoverNote.textContent = 'Cannot hover - insufficient thrust';
+          hoverNote.className = 'result-subtext status-warning';
+        } else if (r.hoverThrottle > 70) {
+          hoverNote.textContent = 'High hover throttle - limited headroom';
+          hoverNote.className = 'result-subtext status-warning';
+        } else if (r.hoverThrottle > 50) {
+          hoverNote.textContent = 'Acceptable hover throttle';
+          hoverNote.className = 'result-subtext status-good';
+        } else {
+          hoverNote.textContent = 'Excellent hover efficiency';
+          hoverNote.className = 'result-subtext status-good';
+        }
+
+        document.getElementById('result-payload').innerHTML =
+          `${r.maxPayload.toFixed(0)}<span class="unit">g</span>`;
+        document.getElementById('result-payload-note').textContent =
+          `While maintaining 2:1 T:W ratio`;
+
+        document.getElementById('result-per-motor').innerHTML =
+          `${r.thrustPerMotor.toFixed(0)}<span class="unit">g</span>`;
+
+        document.getElementById('result-weight-motor').innerHTML =
+          `${r.weightPerMotor.toFixed(0)}<span class="unit">g</span>`;
+
+        document.getElementById('result-excess').innerHTML =
+          `${r.excessThrust.toFixed(0)}<span class="unit">g</span>`;
+
+        const excessNote = document.getElementById('result-excess-note');
+        if (r.excessThrust < 0) {
+          excessNote.textContent = 'Negative - cannot fly';
+          excessNote.className = 'result-subtext status-warning';
+        } else {
+          excessNote.textContent = `${((r.excessThrust / s.weight) * 100).toFixed(0)}% above hover`;
+          excessNote.className = 'result-subtext status-good';
+        }
+
+        // Update use-in links
+        this.updateUseInLinks();
+      },
+
+      renderPerformanceBands() {
+        const container = document.getElementById('performance-bands');
+        container.innerHTML = this.CATEGORIES.slice(0, -1).map(cat => `
+          <div class="perf-band ${cat.class}">
+            <span class="perf-range">${cat.min}-${cat.max === Infinity ? '∞' : cat.max}</span>
+            <span class="perf-name">${cat.name}</span>
+          </div>
+        `).join('');
+      },
+
+      // Gauge visualization
+      canvas: null,
+      ctx: null,
+
+      initGauge() {
+        this.canvas = document.getElementById('twr-gauge');
+        this.ctx = this.canvas.getContext('2d');
+        this.resizeGauge();
+        window.addEventListener('resize', () => this.resizeGauge());
+      },
+
+      resizeGauge() {
+        const container = this.canvas.parentElement;
+        const dpr = window.devicePixelRatio || 1;
+        const size = Math.min(container.clientWidth, 300);
+        this.canvas.width = size * dpr;
+        this.canvas.height = (size * 0.7) * dpr;
+        this.canvas.style.width = size + 'px';
+        this.canvas.style.height = (size * 0.7) + 'px';
+        this.ctx.scale(dpr, dpr);
+      },
+
+      startAnimation() {
+        const animate = () => {
+          this.animation.frameId = requestAnimationFrame(animate);
+          this.updateAnimation();
+          this.drawGauge();
+        };
+        animate();
+      },
+
+      updateAnimation() {
+        const lerpFactor = 0.1;
+        this.animation.currentTWR = FlightBench.lerp(
+          this.animation.currentTWR,
+          this.animation.targetTWR,
+          lerpFactor
+        );
+      },
+
+      drawGauge() {
+        const ctx = this.ctx;
+        const w = this.canvas.clientWidth;
+        const h = this.canvas.clientHeight;
+
+        // Get theme colors
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const bgColor = isDark ? '#1e1e1e' : '#f0f0f0';
+        const textColor = isDark ? '#f0f0f0' : '#1a1a1a';
+        const mutedColor = isDark ? '#707070' : '#888888';
+
+        // Clear canvas
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, w, h);
+
+        const cx = w / 2;
+        const cy = h - 20;
+        const radius = Math.min(w, h) * 0.7;
+        const arcWidth = 20;
+
+        // Draw scale arcs
+        const startAngle = Math.PI;
+        const endAngle = 0;
+        const maxTWR = 8;
+
+        // Color segments
+        const segments = [
+          { start: 0, end: 1, color: '#e74c3c' },      // Cannot fly
+          { start: 1, end: 1.5, color: '#e67e22' },    // Marginal
+          { start: 1.5, end: 2, color: '#f1c40f' },    // Light duty
+          { start: 2, end: 3, color: '#2ecc71' },      // Standard
+          { start: 3, end: 5, color: '#27ae60' },      // Sport
+          { start: 5, end: 8, color: '#1abc9c' }       // Racing+
+        ];
+
+        segments.forEach(seg => {
+          const segStart = startAngle + (seg.start / maxTWR) * Math.PI;
+          const segEnd = startAngle + (Math.min(seg.end, maxTWR) / maxTWR) * Math.PI;
+
+          ctx.strokeStyle = seg.color;
+          ctx.lineWidth = arcWidth;
+          ctx.lineCap = 'butt';
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius - arcWidth / 2, segStart, segEnd);
+          ctx.stroke();
+        });
+
+        // Draw tick marks
+        ctx.strokeStyle = mutedColor;
+        ctx.lineWidth = 2;
+        for (let i = 0; i <= maxTWR; i++) {
+          const angle = startAngle + (i / maxTWR) * Math.PI;
+          const innerR = radius - arcWidth - 5;
+          const outerR = radius - arcWidth - (i % 2 === 0 ? 15 : 10);
+
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(angle) * innerR, cy + Math.sin(angle) * innerR);
+          ctx.lineTo(cx + Math.cos(angle) * outerR, cy + Math.sin(angle) * outerR);
+          ctx.stroke();
+
+          // Labels for even numbers
+          if (i % 2 === 0) {
+            ctx.fillStyle = mutedColor;
+            ctx.font = '12px "DM Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const labelR = radius - arcWidth - 28;
+            ctx.fillText(i.toString(), cx + Math.cos(angle) * labelR, cy + Math.sin(angle) * labelR);
+          }
+        }
+
+        // Draw needle
+        const needleTWR = Math.min(this.animation.currentTWR, maxTWR);
+        const needleAngle = startAngle + (needleTWR / maxTWR) * Math.PI;
+        const needleLength = radius - arcWidth - 35;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(needleAngle);
+
+        // Needle shadow
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetY = 2;
+
+        // Needle
+        ctx.fillStyle = '#eebb3e';
+        ctx.beginPath();
+        ctx.moveTo(needleLength, 0);
+        ctx.lineTo(0, -6);
+        ctx.lineTo(-15, 0);
+        ctx.lineTo(0, 6);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+
+        // Center cap
+        ctx.fillStyle = isDark ? '#404040' : '#666666';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+        ctx.fill();
+
+        // TWR value display
+        ctx.fillStyle = textColor;
+        ctx.font = '600 32px "Space Grotesk", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${this.animation.currentTWR.toFixed(2)}`, cx, cy - radius + 60);
+
+        ctx.fillStyle = mutedColor;
+        ctx.font = '14px "DM Sans", sans-serif';
+        ctx.fillText('Thrust : Weight', cx, cy - radius + 80);
+      },
+
+      updateUseInLinks() {
+        const container = document.getElementById('use-in-links');
+        container.innerHTML = '';
+
+        // Power System Calculator link
+        const powerLink = document.createElement('a');
+        powerLink.href = `power-system.html`;
+        powerLink.className = 'use-in-link';
+        powerLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          Power System Calculator
+        `;
+        container.appendChild(powerLink);
+
+        // Flight Time link
+        const flightLink = document.createElement('a');
+        flightLink.href = `flight-time.html`;
+        flightLink.className = 'use-in-link';
+        flightLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Flight Time Estimator
+        `;
+        container.appendChild(flightLink);
+      }
+    };
+
+    // Initialize calculator when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      TWRCalc.init();
+    });
+  </script>
+
+  <style>
+    /* Toggle group for input mode */
+    .toggle-group {
+      display: flex;
+      gap: 0;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .toggle-btn {
+      flex: 1;
+      padding: 8px 12px;
+      background: var(--bg-secondary);
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .toggle-btn:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .toggle-btn.active {
+      background: var(--accent);
+      color: #1a1a1a;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border-color);
+      margin: 16px 0;
+    }
+
+    .component-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .component-total span:last-child {
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* TWR Gauge */
+    .twr-gauge-container {
+      display: flex;
+      justify-content: center;
+      padding: 16px 0;
+    }
+
+    .twr-gauge {
+      max-width: 100%;
+    }
+
+    /* Performance bands */
+    .performance-bands {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      padding: 8px 0;
+    }
+
+    .perf-band {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      min-width: 70px;
+    }
+
+    .perf-range {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    .perf-name {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .perf-band.critical {
+      background: rgba(231, 76, 60, 0.15);
+      color: #e74c3c;
+    }
+
+    .perf-band.warning {
+      background: rgba(230, 126, 34, 0.15);
+      color: #e67e22;
+    }
+
+    .perf-band.caution {
+      background: rgba(241, 196, 15, 0.15);
+      color: #f1c40f;
+    }
+
+    .perf-band.good {
+      background: rgba(46, 204, 113, 0.15);
+      color: #2ecc71;
+    }
+
+    .perf-band.great {
+      background: rgba(39, 174, 96, 0.15);
+      color: #27ae60;
+    }
+
+    .perf-band.excellent {
+      background: rgba(26, 188, 156, 0.15);
+      color: #1abc9c;
+    }
+
+    .input-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .performance-bands {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</body>
+</html>

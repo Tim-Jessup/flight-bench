@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Density Altitude Calculator - FlightBench</title>
+  <meta name="description" content="Calculate density altitude and understand how elevation, temperature, and humidity affect your UAV's thrust and flight performance.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23eebb3e' rx='20' width='100' height='100'/><path d='M50 20 L70 45 L60 45 L60 80 L40 80 L40 45 L30 45 Z' fill='%231a1a1a'/></svg>">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L15 9H21L16 14L18 22L12 18L6 22L8 14L3 9H9L12 2Z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Flight<span>Bench</span></span>
+        </a>
+      </div>
+
+      <div class="sidebar-search">
+        <input type="text" class="search-input" placeholder="Search calculators..." aria-label="Search calculators">
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-category">
+          <div class="nav-category-title">Power System</div>
+          <a href="power-system.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            Power System Calculator
+          </a>
+          <a href="wire-gauge.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            Wire Gauge Calculator
+          </a>
+          <a href="battery-config.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M22 11v4"/>
+              <path d="M6 11v6"/>
+              <path d="M10 11v6"/>
+              <path d="M14 11v6"/>
+              <path d="M18 11v6"/>
+            </svg>
+            Battery Configuration
+          </a>
+        </div>
+
+        <div class="nav-category">
+          <div class="nav-category-title">Mission Planning</div>
+          <a href="flight-time.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Flight Time Estimator
+          </a>
+          <a href="range-estimator.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            Range Estimator
+          </a>
+        </div>
+
+        <div class="nav-category">
+          <div class="nav-category-title">Environment</div>
+          <a href="density-altitude.html" class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v2"/>
+              <path d="M12 20v2"/>
+              <path d="M4.93 4.93l1.41 1.41"/>
+              <path d="M17.66 17.66l1.41 1.41"/>
+              <path d="M2 12h2"/>
+              <path d="M20 12h2"/>
+              <path d="M6.34 17.66l-1.41 1.41"/>
+              <path d="M19.07 4.93l-1.41 1.41"/>
+              <circle cx="12" cy="12" r="4"/>
+            </svg>
+            Density Altitude
+          </a>
+        </div>
+
+        <div class="nav-category">
+          <div class="nav-category-title">Mechanical</div>
+          <a href="thrust-weight.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M2 12h20"/>
+              <circle cx="12" cy="12" r="4"/>
+            </svg>
+            Thrust-to-Weight Ratio
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="page-header">
+        <h1>Density Altitude Calculator</h1>
+        <p>Calculate how elevation, temperature, and humidity affect air density and your UAV's performance.</p>
+      </header>
+
+      <div class="calculator-container">
+        <div class="calculator-grid">
+          <!-- Inputs Panel -->
+          <div class="card inputs-panel">
+            <h2 class="card-title">Conditions</h2>
+
+            <!-- Elevation -->
+            <div class="input-group">
+              <label class="input-label">
+                Field Elevation
+              </label>
+              <div class="input-row">
+                <input type="text" class="input-field" id="elevation-value" value="0" style="width: 100px;">
+                <select class="select-field" id="elevation-unit" style="width: 100px;">
+                  <option value="m" selected>meters</option>
+                  <option value="ft">feet</option>
+                </select>
+              </div>
+              <div class="input-hint">Altitude above sea level</div>
+            </div>
+
+            <!-- Temperature -->
+            <div class="input-group">
+              <label class="input-label">
+                Temperature
+              </label>
+              <div class="input-row">
+                <input type="text" class="input-field" id="temp-value" value="20" style="width: 100px;">
+                <select class="select-field" id="temp-unit" style="width: 100px;">
+                  <option value="c" selected>°C</option>
+                  <option value="f">°F</option>
+                </select>
+              </div>
+              <div class="input-hint">Ambient air temperature</div>
+            </div>
+
+            <!-- Humidity -->
+            <div class="input-group">
+              <label class="input-label">
+                Relative Humidity
+                <span class="input-unit">%</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="humidity-slider" min="0" max="100" value="50" step="5">
+                <input type="text" class="slider-value" id="humidity-value" value="50">
+              </div>
+            </div>
+
+            <hr class="divider">
+
+            <h2 class="card-title">Your Aircraft</h2>
+
+            <!-- Sea Level TWR -->
+            <div class="input-group">
+              <label class="input-label">
+                T:W Ratio at Sea Level
+                <span class="input-unit">: 1</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="twr-slider" min="1" max="10" value="3" step="0.1">
+                <input type="text" class="slider-value" id="twr-value" value="3">
+              </div>
+              <div class="input-hint">Your thrust-to-weight ratio in standard conditions</div>
+            </div>
+
+            <!-- Advanced Settings Toggle -->
+            <button class="advanced-toggle" id="advanced-toggle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+              Advanced Settings
+            </button>
+
+            <div class="advanced-content" id="advanced-content">
+              <!-- QNH / Altimeter Setting -->
+              <div class="input-group">
+                <label class="input-label">
+                  Altimeter Setting (QNH)
+                  <span class="input-unit">hPa</span>
+                </label>
+                <div class="input-row">
+                  <input type="text" class="input-field" id="qnh-value" value="1013.25" style="width: 120px;">
+                </div>
+                <div class="input-hint">Standard: 1013.25 hPa / 29.92 inHg</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visualization Area -->
+          <div class="card viz-area">
+            <h2 class="card-title">Altitude Visualization</h2>
+            <div class="altitude-viz-container">
+              <canvas id="altitude-canvas" class="altitude-canvas"></canvas>
+            </div>
+            <div class="density-comparison">
+              <div class="density-item">
+                <div class="density-label">Sea Level</div>
+                <div class="density-bar">
+                  <div class="density-fill sea-level" style="width: 100%"></div>
+                </div>
+                <div class="density-value">1.225 kg/m³</div>
+              </div>
+              <div class="density-item">
+                <div class="density-label">Your Location</div>
+                <div class="density-bar">
+                  <div class="density-fill current" id="density-bar-fill"></div>
+                </div>
+                <div class="density-value" id="density-bar-value">1.225 kg/m³</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Results Panel -->
+          <div class="card results-panel">
+            <h2 class="card-title">Results</h2>
+
+            <div class="result-item">
+              <div class="result-label">Density Altitude</div>
+              <div class="result-value highlight" id="result-da">—<span class="unit">m</span></div>
+              <div class="result-subtext" id="result-da-ft"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Air Density</div>
+              <div class="result-value" id="result-density">—<span class="unit">kg/m³</span></div>
+              <div class="result-subtext" id="result-density-note"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Density Ratio (σ)</div>
+              <div class="result-value" id="result-sigma">—<span class="unit">%</span></div>
+              <div class="result-subtext">Compared to sea level standard</div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Thrust Available</div>
+              <div class="result-value" id="result-thrust">—<span class="unit">%</span></div>
+              <div class="result-subtext" id="result-thrust-note"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Effective T:W Ratio</div>
+              <div class="result-value" id="result-eff-twr">—<span class="unit">: 1</span></div>
+              <div class="result-subtext" id="result-eff-twr-note"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Hover Throttle</div>
+              <div class="result-value" id="result-hover">—<span class="unit">%</span></div>
+              <div class="result-subtext" id="result-hover-note"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Pressure Altitude</div>
+              <div class="result-value" id="result-pa">—<span class="unit">m</span></div>
+              <div class="result-subtext" id="result-pa-ft"></div>
+            </div>
+
+            <!-- Share Section -->
+            <div class="share-section">
+              <button class="btn btn-primary btn-full" id="share-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                  <polyline points="16 6 12 2 8 6"/>
+                  <line x1="12" y1="2" x2="12" y2="15"/>
+                </svg>
+                Copy Link to Share
+              </button>
+            </div>
+
+            <!-- Use in other calculators -->
+            <div class="use-in-section" id="use-in-section">
+              <div class="use-in-title">Related calculators:</div>
+              <div class="use-in-links" id="use-in-links">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+      </svg>
+    </button>
+  </div>
+
+  <script src="flightbench.js"></script>
+  <script>
+    // Density Altitude Calculator Logic
+    const DensityCalc = {
+      // Physical constants
+      CONSTANTS: {
+        SEA_LEVEL_PRESSURE: 1013.25,  // hPa (standard)
+        SEA_LEVEL_TEMP: 288.15,       // K (15°C)
+        SEA_LEVEL_DENSITY: 1.225,     // kg/m³
+        LAPSE_RATE: 0.0065,           // K/m (temperature lapse rate)
+        GAS_CONSTANT: 287.05,         // J/(kg·K) for dry air
+        GRAVITY: 9.80665,             // m/s²
+        MOLAR_MASS: 0.0289644         // kg/mol for dry air
+      },
+
+      // Current state
+      state: {
+        elevation: 0,         // m
+        elevationUnit: 'm',
+        temperature: 20,      // °C
+        tempUnit: 'c',
+        humidity: 50,         // %
+        twr: 3,               // sea level T:W ratio
+        qnh: 1013.25          // hPa
+      },
+
+      // Initialize
+      init() {
+        this.bindInputs();
+        this.loadFromUrl();
+        this.initCanvas();
+        this.calculate();
+      },
+
+      // Bind all input events
+      bindInputs() {
+        // Elevation
+        document.getElementById('elevation-value').addEventListener('change', (e) => {
+          const num = parseFloat(e.target.value);
+          if (!isNaN(num)) {
+            this.state.elevation = num;
+            this.calculate();
+          }
+        });
+
+        document.getElementById('elevation-unit').addEventListener('change', (e) => {
+          this.state.elevationUnit = e.target.value;
+          this.calculate();
+        });
+
+        // Temperature
+        document.getElementById('temp-value').addEventListener('change', (e) => {
+          const num = parseFloat(e.target.value);
+          if (!isNaN(num)) {
+            this.state.temperature = num;
+            this.calculate();
+          }
+        });
+
+        document.getElementById('temp-unit').addEventListener('change', (e) => {
+          this.state.tempUnit = e.target.value;
+          this.calculate();
+        });
+
+        // Humidity slider
+        this.bindSlider('humidity', 'humidity-slider', 'humidity-value');
+
+        // TWR slider
+        this.bindSlider('twr', 'twr-slider', 'twr-value');
+
+        // QNH
+        document.getElementById('qnh-value').addEventListener('change', (e) => {
+          const num = parseFloat(e.target.value);
+          if (!isNaN(num)) {
+            this.state.qnh = num;
+            this.calculate();
+          }
+        });
+
+        // Share button
+        document.getElementById('share-btn').addEventListener('click', () => {
+          FlightBench.state.copyShareUrl();
+        });
+      },
+
+      bindSlider(stateKey, sliderId, valueId) {
+        const slider = document.getElementById(sliderId);
+        const valueInput = document.getElementById(valueId);
+
+        const update = (val) => {
+          const num = parseFloat(val);
+          if (!isNaN(num)) {
+            this.state[stateKey] = num;
+            slider.value = num;
+            valueInput.value = num;
+            this.calculate();
+          }
+        };
+
+        slider.addEventListener('input', (e) => update(e.target.value));
+        valueInput.addEventListener('change', (e) => update(e.target.value));
+        valueInput.addEventListener('keyup', (e) => {
+          if (e.key === 'Enter') update(e.target.value);
+        });
+      },
+
+      // Load state from URL
+      loadFromUrl() {
+        const urlState = FlightBench.state.getAll();
+
+        if (urlState.elev !== undefined) {
+          this.state.elevation = urlState.elev;
+          document.getElementById('elevation-value').value = urlState.elev;
+        }
+        if (urlState.elevUnit) {
+          this.state.elevationUnit = urlState.elevUnit;
+          document.getElementById('elevation-unit').value = urlState.elevUnit;
+        }
+        if (urlState.temp !== undefined) {
+          this.state.temperature = urlState.temp;
+          document.getElementById('temp-value').value = urlState.temp;
+        }
+        if (urlState.tempUnit) {
+          this.state.tempUnit = urlState.tempUnit;
+          document.getElementById('temp-unit').value = urlState.tempUnit;
+        }
+        if (urlState.rh !== undefined) {
+          this.state.humidity = urlState.rh;
+          document.getElementById('humidity-slider').value = urlState.rh;
+          document.getElementById('humidity-value').value = urlState.rh;
+        }
+        if (urlState.twr !== undefined) {
+          this.state.twr = urlState.twr;
+          document.getElementById('twr-slider').value = urlState.twr;
+          document.getElementById('twr-value').value = urlState.twr;
+        }
+        if (urlState.qnh !== undefined) {
+          this.state.qnh = urlState.qnh;
+          document.getElementById('qnh-value').value = urlState.qnh;
+        }
+      },
+
+      // Save state to URL
+      saveToUrl() {
+        FlightBench.state.set({
+          elev: this.state.elevation,
+          elevUnit: this.state.elevationUnit,
+          temp: this.state.temperature,
+          tempUnit: this.state.tempUnit,
+          rh: this.state.humidity,
+          twr: this.state.twr,
+          qnh: this.state.qnh
+        });
+      },
+
+      // Convert elevation to meters
+      getElevationMeters() {
+        if (this.state.elevationUnit === 'ft') {
+          return this.state.elevation * 0.3048;
+        }
+        return this.state.elevation;
+      },
+
+      // Convert temperature to Celsius
+      getTempCelsius() {
+        if (this.state.tempUnit === 'f') {
+          return (this.state.temperature - 32) * 5/9;
+        }
+        return this.state.temperature;
+      },
+
+      // Calculate saturation vapor pressure (Magnus formula)
+      saturationVaporPressure(tempC) {
+        return 6.1078 * Math.pow(10, (7.5 * tempC) / (tempC + 237.3));
+      },
+
+      // Main calculation
+      calculate() {
+        const C = this.CONSTANTS;
+        const s = this.state;
+
+        // Get values in standard units
+        const elevM = this.getElevationMeters();
+        const tempC = this.getTempCelsius();
+        const tempK = tempC + 273.15;
+
+        // Calculate pressure altitude (altitude in ISA where pressure matches current QNH-adjusted pressure)
+        // Using barometric formula: P = P0 * (1 - L*h/T0)^(g*M/(R*L))
+        const pressureRatio = s.qnh / C.SEA_LEVEL_PRESSURE;
+        const exponent = C.GRAVITY * C.MOLAR_MASS / (8.314 * C.LAPSE_RATE);
+
+        // Pressure at elevation considering QNH
+        const pressureAtElev = s.qnh * Math.pow(1 - (C.LAPSE_RATE * elevM) / C.SEA_LEVEL_TEMP, exponent);
+
+        // Pressure altitude: solve for h where standard atmosphere gives this pressure
+        const pressureAltitude = (C.SEA_LEVEL_TEMP / C.LAPSE_RATE) *
+          (1 - Math.pow(pressureAtElev / C.SEA_LEVEL_PRESSURE, 1/exponent));
+
+        // Water vapor correction for humidity
+        const satVapor = this.saturationVaporPressure(tempC);
+        const actualVapor = satVapor * (s.humidity / 100);
+        const dryPressure = pressureAtElev - actualVapor;
+
+        // Virtual temperature (accounts for humidity making air less dense)
+        const mixingRatio = 0.622 * actualVapor / dryPressure;
+        const virtualTempK = tempK * (1 + 0.608 * mixingRatio);
+
+        // Air density using ideal gas law: ρ = P / (R * Tv)
+        const airDensity = (pressureAtElev * 100) / (C.GAS_CONSTANT * virtualTempK);
+
+        // Density ratio (sigma)
+        const densityRatio = airDensity / C.SEA_LEVEL_DENSITY;
+
+        // Density altitude: altitude in ISA where density matches current density
+        // ρ = ρ0 * (1 - L*h/T0)^(g*M/(R*L) - 1)
+        const densityExponent = exponent - 1;
+        const densityAltitude = (C.SEA_LEVEL_TEMP / C.LAPSE_RATE) *
+          (1 - Math.pow(densityRatio, 1/densityExponent));
+
+        // Thrust scales approximately with air density (for props)
+        // More accurately: thrust ∝ ρ^0.5 to ρ^1 depending on conditions
+        // Using ρ^0.7 as a reasonable approximation for multirotor props
+        const thrustRatio = Math.pow(densityRatio, 0.7);
+
+        // Effective TWR at altitude
+        const effectiveTWR = s.twr * thrustRatio;
+
+        // Hover throttle at altitude
+        const seaLevelHover = (1 / s.twr) * 100;
+        const altitudeHover = (1 / effectiveTWR) * 100;
+
+        // ISA temperature at this elevation
+        const isaTemp = 15 - (C.LAPSE_RATE * elevM * 1000); // Simplified
+        const tempDeviation = tempC - isaTemp;
+
+        // Update results
+        this.updateResults({
+          densityAltitude,
+          pressureAltitude,
+          airDensity,
+          densityRatio,
+          thrustRatio,
+          effectiveTWR,
+          seaLevelHover,
+          altitudeHover,
+          tempDeviation,
+          elevM
+        });
+
+        // Update visualization
+        this.drawAltitude({
+          elevM,
+          densityAltitude,
+          pressureAltitude,
+          densityRatio
+        });
+
+        // Save to URL
+        this.saveToUrl();
+      },
+
+      updateResults(r) {
+        // Density altitude
+        document.getElementById('result-da').innerHTML =
+          `${r.densityAltitude.toFixed(0)}<span class="unit">m</span>`;
+        document.getElementById('result-da-ft').textContent =
+          `${(r.densityAltitude * 3.28084).toFixed(0)} ft`;
+
+        // Air density
+        document.getElementById('result-density').innerHTML =
+          `${r.airDensity.toFixed(3)}<span class="unit">kg/m³</span>`;
+
+        const densityNote = document.getElementById('result-density-note');
+        const densityDiff = ((r.densityRatio - 1) * 100);
+        if (densityDiff < 0) {
+          densityNote.textContent = `${Math.abs(densityDiff).toFixed(1)}% thinner than sea level`;
+        } else {
+          densityNote.textContent = `${densityDiff.toFixed(1)}% denser than sea level`;
+        }
+
+        // Density ratio
+        document.getElementById('result-sigma').innerHTML =
+          `${(r.densityRatio * 100).toFixed(1)}<span class="unit">%</span>`;
+
+        // Thrust available
+        document.getElementById('result-thrust').innerHTML =
+          `${(r.thrustRatio * 100).toFixed(1)}<span class="unit">%</span>`;
+
+        const thrustNote = document.getElementById('result-thrust-note');
+        const thrustLoss = (1 - r.thrustRatio) * 100;
+        if (thrustLoss > 0) {
+          thrustNote.textContent = `${thrustLoss.toFixed(1)}% thrust reduction`;
+          thrustNote.className = thrustLoss > 20 ? 'result-subtext status-warning' : 'result-subtext';
+        } else {
+          thrustNote.textContent = 'Standard conditions';
+          thrustNote.className = 'result-subtext';
+        }
+
+        // Effective TWR
+        document.getElementById('result-eff-twr').innerHTML =
+          `${r.effectiveTWR.toFixed(2)}<span class="unit">: 1</span>`;
+
+        const twrNote = document.getElementById('result-eff-twr-note');
+        if (r.effectiveTWR < 1.5) {
+          twrNote.textContent = 'Marginal - limited control authority';
+          twrNote.className = 'result-subtext status-warning';
+        } else if (r.effectiveTWR < 2) {
+          twrNote.textContent = 'Light duty performance';
+          twrNote.className = 'result-subtext status-warning';
+        } else {
+          twrNote.textContent = `Down from ${this.state.twr.toFixed(1)}:1 at sea level`;
+          twrNote.className = 'result-subtext status-good';
+        }
+
+        // Hover throttle
+        document.getElementById('result-hover').innerHTML =
+          `${r.altitudeHover.toFixed(0)}<span class="unit">%</span>`;
+
+        const hoverNote = document.getElementById('result-hover-note');
+        const hoverIncrease = r.altitudeHover - r.seaLevelHover;
+        if (r.altitudeHover > 100) {
+          hoverNote.textContent = 'Cannot hover at this altitude!';
+          hoverNote.className = 'result-subtext status-warning';
+        } else if (r.altitudeHover > 70) {
+          hoverNote.textContent = `+${hoverIncrease.toFixed(0)}% vs sea level (high)`;
+          hoverNote.className = 'result-subtext status-warning';
+        } else {
+          hoverNote.textContent = `+${hoverIncrease.toFixed(0)}% vs sea level`;
+          hoverNote.className = 'result-subtext';
+        }
+
+        // Pressure altitude
+        document.getElementById('result-pa').innerHTML =
+          `${r.pressureAltitude.toFixed(0)}<span class="unit">m</span>`;
+        document.getElementById('result-pa-ft').textContent =
+          `${(r.pressureAltitude * 3.28084).toFixed(0)} ft`;
+
+        // Update density bar
+        const barFill = document.getElementById('density-bar-fill');
+        const barValue = document.getElementById('density-bar-value');
+        barFill.style.width = `${r.densityRatio * 100}%`;
+        barValue.textContent = `${r.airDensity.toFixed(3)} kg/m³`;
+
+        // Update use-in links
+        this.updateUseInLinks(r);
+      },
+
+      // Canvas visualization
+      canvas: null,
+      ctx: null,
+
+      initCanvas() {
+        this.canvas = document.getElementById('altitude-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.resizeCanvas();
+        window.addEventListener('resize', () => {
+          this.resizeCanvas();
+          this.calculate();
+        });
+      },
+
+      resizeCanvas() {
+        const container = this.canvas.parentElement;
+        const dpr = window.devicePixelRatio || 1;
+        const width = container.clientWidth;
+        const height = 200;
+        this.canvas.width = width * dpr;
+        this.canvas.height = height * dpr;
+        this.canvas.style.width = width + 'px';
+        this.canvas.style.height = height + 'px';
+        this.ctx.scale(dpr, dpr);
+      },
+
+      drawAltitude(data) {
+        const ctx = this.ctx;
+        const w = this.canvas.clientWidth;
+        const h = this.canvas.clientHeight;
+
+        // Get theme colors
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const textColor = isDark ? '#f0f0f0' : '#1a1a1a';
+        const mutedColor = isDark ? '#707070' : '#888888';
+        const accentColor = '#eebb3e';
+
+        // Clear canvas
+        ctx.clearRect(0, 0, w, h);
+
+        // Draw gradient sky background
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
+        if (isDark) {
+          skyGrad.addColorStop(0, '#1a1a2e');
+          skyGrad.addColorStop(0.5, '#16213e');
+          skyGrad.addColorStop(1, '#1a1a2e');
+        } else {
+          skyGrad.addColorStop(0, '#1e3c72');
+          skyGrad.addColorStop(0.5, '#2a5298');
+          skyGrad.addColorStop(1, '#74b9ff');
+        }
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Scale: 0-10000m shown
+        const maxAlt = 10000;
+        const altToY = (alt) => h - (alt / maxAlt) * (h - 40) - 20;
+
+        // Draw altitude scale on left
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = '10px "DM Sans", sans-serif';
+        ctx.textAlign = 'right';
+
+        for (let alt = 0; alt <= maxAlt; alt += 2000) {
+          const y = altToY(alt);
+          ctx.fillText(`${alt}m`, 40, y + 3);
+
+          ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(45, y);
+          ctx.lineTo(w - 10, y);
+          ctx.stroke();
+        }
+
+        // Draw ground
+        const groundY = altToY(0);
+        ctx.fillStyle = isDark ? '#2d3436' : '#6c5ce7';
+        ctx.fillRect(50, groundY, w - 60, h - groundY);
+
+        // Mountain/terrain suggestion
+        ctx.beginPath();
+        ctx.moveTo(50, groundY);
+        ctx.lineTo(80, groundY - 10);
+        ctx.lineTo(120, groundY);
+        ctx.lineTo(160, groundY - 25);
+        ctx.lineTo(200, groundY);
+        ctx.lineTo(w - 10, groundY);
+        ctx.lineTo(w - 10, h);
+        ctx.lineTo(50, h);
+        ctx.closePath();
+        ctx.fillStyle = isDark ? '#3d3d3d' : '#a29bfe';
+        ctx.fill();
+
+        // Center area for markers
+        const cx = w / 2;
+
+        // Draw field elevation marker
+        const fieldY = altToY(data.elevM);
+        ctx.fillStyle = '#27ae60';
+        ctx.beginPath();
+        ctx.arc(cx - 60, fieldY, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = 'white';
+        ctx.font = '11px "DM Sans", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`Field: ${data.elevM.toFixed(0)}m`, cx - 45, fieldY + 4);
+
+        // Draw pressure altitude marker
+        const paY = altToY(data.pressureAltitude);
+        ctx.fillStyle = '#3498db';
+        ctx.beginPath();
+        ctx.arc(cx + 20, paY, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillText(`PA: ${data.pressureAltitude.toFixed(0)}m`, cx + 35, paY + 4);
+
+        // Draw density altitude marker (main highlight)
+        const daY = altToY(data.densityAltitude);
+        ctx.fillStyle = accentColor;
+        ctx.beginPath();
+        ctx.arc(cx + 20, daY, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = isDark ? '#1a1a1a' : 'white';
+        ctx.font = 'bold 12px "DM Sans", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('DA', cx + 20, daY + 4);
+
+        ctx.fillStyle = 'white';
+        ctx.font = '11px "DM Sans", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${data.densityAltitude.toFixed(0)}m`, cx + 35, daY + 4);
+
+        // Draw connecting line if altitudes differ significantly
+        if (Math.abs(data.densityAltitude - data.elevM) > 100) {
+          ctx.strokeStyle = 'rgba(238, 187, 62, 0.5)';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          ctx.moveTo(cx - 52, fieldY);
+          ctx.lineTo(cx + 12, daY);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Legend
+        ctx.font = '10px "DM Sans", sans-serif';
+        ctx.textAlign = 'left';
+
+        const legendY = 15;
+        ctx.fillStyle = '#27ae60';
+        ctx.fillRect(w - 150, legendY - 6, 10, 10);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.fillText('Field Elevation', w - 135, legendY + 2);
+
+        ctx.fillStyle = accentColor;
+        ctx.fillRect(w - 150, legendY + 10, 10, 10);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.fillText('Density Altitude', w - 135, legendY + 18);
+      },
+
+      updateUseInLinks(r) {
+        const container = document.getElementById('use-in-links');
+        container.innerHTML = '';
+
+        // Thrust-to-Weight link
+        const twrLink = document.createElement('a');
+        twrLink.href = `thrust-weight.html?thrust=${Math.round(this.state.twr * 1000 * r.thrustRatio)}&weight=1000`;
+        twrLink.className = 'use-in-link';
+        twrLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v20M2 12h20"/>
+            <circle cx="12" cy="12" r="4"/>
+          </svg>
+          T:W Ratio (${r.effectiveTWR.toFixed(1)}:1 effective)
+        `;
+        container.appendChild(twrLink);
+
+        // Flight Time link
+        const flightLink = document.createElement('a');
+        flightLink.href = `flight-time.html`;
+        flightLink.className = 'use-in-link';
+        flightLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Flight Time Estimator
+        `;
+        container.appendChild(flightLink);
+
+        // Range link
+        const rangeLink = document.createElement('a');
+        rangeLink.href = `range-estimator.html`;
+        rangeLink.className = 'use-in-link';
+        rangeLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          Range Estimator
+        `;
+        container.appendChild(rangeLink);
+      }
+    };
+
+    // Initialize calculator when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      DensityCalc.init();
+    });
+  </script>
+
+  <style>
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border-color);
+      margin: 16px 0;
+    }
+
+    .input-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Altitude visualization */
+    .altitude-viz-container {
+      display: flex;
+      justify-content: center;
+      padding: 8px 0;
+    }
+
+    .altitude-canvas {
+      max-width: 100%;
+      border-radius: var(--radius-md);
+    }
+
+    /* Density comparison bars */
+    .density-comparison {
+      padding: 16px;
+    }
+
+    .density-item {
+      display: grid;
+      grid-template-columns: 100px 1fr 80px;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .density-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .density-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .density-bar {
+      height: 16px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .density-fill {
+      height: 100%;
+      border-radius: 8px;
+      transition: width 0.3s ease;
+    }
+
+    .density-fill.sea-level {
+      background: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    .density-fill.current {
+      background: var(--accent);
+    }
+
+    .density-value {
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-secondary);
+      text-align: right;
+    }
+
+    /* Status colors */
+    .status-good {
+      color: #27ae60 !important;
+    }
+
+    .status-warning {
+      color: #e74c3c !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .density-item {
+        grid-template-columns: 80px 1fr 70px;
+        gap: 8px;
+      }
+    }
+  </style>
+</body>
+</html>
