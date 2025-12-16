@@ -665,13 +665,11 @@
 
         // Get theme colors
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const bgColor = isDark ? '#1e1e1e' : '#f0f0f0';
         const textColor = isDark ? '#f0f0f0' : '#1a1a1a';
         const mutedColor = isDark ? '#707070' : '#888888';
 
-        // Clear canvas
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, w, h);
+        // Clear canvas with transparency
+        ctx.clearRect(0, 0, w, h);
 
         const cx = w / 2;
         const cy = h - 20;
@@ -761,15 +759,15 @@
         ctx.arc(cx, cy, 12, 0, Math.PI * 2);
         ctx.fill();
 
-        // TWR value display
+        // TWR value display (positioned above the scale)
         ctx.fillStyle = textColor;
         ctx.font = '600 32px "Space Grotesk", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`${this.animation.currentTWR.toFixed(2)}`, cx, cy - radius + 60);
+        ctx.fillText(`${this.animation.currentTWR.toFixed(2)}`, cx, cy - radius - 30);
 
         ctx.fillStyle = mutedColor;
         ctx.font = '14px "DM Sans", sans-serif';
-        ctx.fillText('Thrust : Weight', cx, cy - radius + 80);
+        ctx.fillText('Thrust : Weight', cx, cy - radius - 5);
       },
 
       updateUseInLinks() {
