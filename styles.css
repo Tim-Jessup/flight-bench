@@ -902,6 +902,176 @@ p {
   background: var(--text-muted);
 }
 
+/* Calculation Explanations Section */
+.calculation-explanations {
+  margin-bottom: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.calculation-explanations.collapsed {
+  background: transparent;
+  border: 1px solid var(--border-light);
+}
+
+.calculation-explanations-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.calculation-explanations.collapsed .calculation-explanations-toggle {
+  padding: 10px 16px;
+  font-size: 0.8rem;
+}
+
+.calculation-explanations-toggle:hover {
+  color: var(--text-primary);
+}
+
+.calculation-explanations-toggle-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calculation-explanations-toggle-text svg {
+  width: 18px;
+  height: 18px;
+  transition: transform var(--transition-fast);
+}
+
+.calculation-explanations.collapsed .calculation-explanations-toggle-text svg {
+  width: 14px;
+  height: 14px;
+}
+
+.calculation-explanations-toggle-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  transition: transform var(--transition-fast);
+}
+
+.calculation-explanations:not(.collapsed) .calculation-explanations-toggle-icon {
+  transform: rotate(180deg);
+}
+
+.calculation-explanations-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--transition-slow);
+}
+
+.calculation-explanations:not(.collapsed) .calculation-explanations-content {
+  max-height: 2000px;
+}
+
+.calculation-explanations-inner {
+  padding: 0 20px 20px 20px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.calculation-explanations-inner h3 {
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
+
+.calculation-explanations-inner h3:first-child {
+  margin-top: 0;
+}
+
+.calculation-explanations-inner h4 {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.calculation-explanations-inner p {
+  margin-bottom: 12px;
+}
+
+.calculation-explanations-inner ul {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.calculation-explanations-inner li {
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+}
+
+.calculation-explanations-inner code {
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  color: var(--text-primary);
+}
+
+.formula {
+  display: block;
+  background: var(--bg-tertiary);
+  padding: 12px 16px;
+  margin: 12px 0;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  overflow-x: auto;
+}
+
+.formula-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  display: block;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.limitations-section {
+  background: var(--accent-soft);
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  margin-top: 20px;
+  border-left: 3px solid var(--warning);
+}
+
+.limitations-section h4 {
+  color: var(--warning);
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.limitations-section svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* Print styles */
 @media print {
   .sidebar,
@@ -910,8 +1080,17 @@ p {
   .use-in-section {
     display: none !important;
   }
-  
+
   .main-content {
     margin-left: 0 !important;
+  }
+
+  .calculation-explanations {
+    border: 1px solid var(--border);
+    page-break-inside: avoid;
+  }
+
+  .calculation-explanations-content {
+    max-height: none !important;
   }
 }
